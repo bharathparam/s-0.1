@@ -224,13 +224,11 @@ class BluetoothGattClientManager(
             return
         }
         
-        val scanFilter = ScanFilter.Builder()
-            .setServiceUuid(ParcelUuid(AppConstants.Mesh.Gatt.SERVICE_UUID))
-            .build()
-        
-        val scanFilters = listOf(scanFilter) 
-        
-        Log.d(TAG, "Starting BLE scan with target service UUID: ${AppConstants.Mesh.Gatt.SERVICE_UUID}")
+        // Some device/chipset combinations miss valid BLE adverts when strict hardware-side
+        // service UUID filtering is enabled. We scan broadly, then enforce service checks in
+        // handleScanResult() via service UUID/service data.
+        val scanFilters = emptyList<ScanFilter>()
+        Log.d(TAG, "Starting BLE scan (broad scan + in-app service UUID filtering)")
         
         scanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
@@ -314,14 +312,13 @@ class BluetoothGattClientManager(
         val deviceAddress = device.address
         val scanRecord = result.scanRecord
         
-        // CRITICAL: Only process devices that have our service UUID
+        val serviceData = scanRecord?.getServiceData(ParcelUuid(AppConstants.Mesh.Gatt.SERVICE_UUID))
+        // Accept either explicit service UUID or service data. Some devices omit
+        // serviceUuids in scan records while still carrying valid service data.
         val hasOurService = scanRecord?.serviceUuids?.any { it.uuid == AppConstants.Mesh.Gatt.SERVICE_UUID } == true
-        if (!hasOurService) {
-            return
-        }
+        if (!hasOurService && serviceData == null) return
 
         // Try to extract peerID from Service Data (if available) for stable identity
-        val serviceData = scanRecord?.getServiceData(ParcelUuid(AppConstants.Mesh.Gatt.SERVICE_UUID))
         val peerID = if (serviceData != null && serviceData.size >= 8) {
             serviceData.joinToString("") { "%02x".format(it) }
         } else {
@@ -405,7 +402,7 @@ class BluetoothGattClientManager(
         if (!permissionManager.hasBluetoothPermissions()) return
 
         val deviceAddress = device.address
-        Log.i(TAG, "Connecting to bitchat device: $deviceAddress (peerID: $peerID)")
+        Log.i(TAG, "Connecting to Swarm Net device: $deviceAddress (peerID: $peerID)")
         
         val gattCallback = object : BluetoothGattCallback() {
             override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {

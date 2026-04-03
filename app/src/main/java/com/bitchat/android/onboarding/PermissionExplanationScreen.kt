@@ -27,7 +27,7 @@ import com.bitchat.android.R
 
 /**
  * Permission explanation screen shown before requesting permissions
- * Explains why bitchat needs each permission and reassures users about privacy
+ * Explains why Swarm Net needs each permission and reassures users about privacy
  */
 @Composable
 fun PermissionExplanationScreen(

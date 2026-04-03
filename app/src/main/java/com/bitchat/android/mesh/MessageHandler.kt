@@ -1,6 +1,9 @@
 package com.bitchat.android.mesh
 
 import android.util.Log
+import com.bitchat.android.ledger.LedgerBlobNames
+import com.bitchat.android.ledger.LedgerRecordPayload
+import com.bitchat.android.ledger.LedgerRepository
 import com.bitchat.android.model.BitchatMessage
 import com.bitchat.android.model.BitchatMessageType
 import com.bitchat.android.model.IdentityAnnouncement
@@ -219,10 +222,11 @@ class MessageHandler(private val myPeerID: String, private val appContext: andro
 
         if (peerID == myPeerID) return false
 
-        // Ignore stale announcements older than STALE_PEER_TIMEOUT
+        // Reject only clearly stale announces. Large device clock skew is common in the wild,
+        // so do not drop when sender time appears to be far in the future.
         val now = System.currentTimeMillis()
         val age = now - packet.timestamp.toLong()
-        if (age > com.bitchat.android.util.AppConstants.Mesh.STALE_PEER_TIMEOUT_MS) {
+        if (age > com.bitchat.android.util.AppConstants.Mesh.STALE_PEER_TIMEOUT_MS && age < 86_400_000L) {
             Log.w(TAG, "Ignoring stale ANNOUNCE from ${peerID.take(8)} (age=${age}ms > ${com.bitchat.android.util.AppConstants.Mesh.STALE_PEER_TIMEOUT_MS}ms)")
             return false
         }
@@ -352,6 +356,46 @@ class MessageHandler(private val myPeerID: String, private val appContext: andro
     }
     
     /**
+     * Ledger metadata record (signed inner payload + outer mesh signature).
+     */
+    suspend fun handleLedgerRecord(routed: RoutedPacket) {
+        val packet = routed.packet
+        val peerID = routed.peerID ?: return
+        if (peerID == myPeerID) return
+        val payload = LedgerRecordPayload.decode(packet.payload) ?: run {
+            Log.w(TAG, "LEDGER_RECORD: decode failed from ${peerID.take(8)}")
+            return
+        }
+        if (payload.creatorPeerId != peerID) {
+            Log.w(TAG, "LEDGER_RECORD: creator $peerID != payload ${payload.creatorPeerId}")
+            return
+        }
+        val canon = payload.canonicalSigningBytes()
+        if (delegate?.verifyEd25519Signature(payload.signature, canon, payload.signingPublicKey) != true) {
+            Log.w(TAG, "LEDGER_RECORD: inner signature invalid from ${peerID.take(8)}")
+            return
+        }
+        val info = delegate?.getPeerInfo(peerID)
+        if (info?.signingPublicKey != null && !info.signingPublicKey.contentEquals(payload.signingPublicKey)) {
+            Log.w(TAG, "LEDGER_RECORD: signing key mismatch for ${peerID.take(8)}")
+            return
+        }
+        val hashHex = payload.contentHashSha256.joinToString("") { b -> "%02x".format(b) }
+        val repo = LedgerRepository.getInstance(appContext)
+        repo.mergeRecord(
+            hashHex = hashHex,
+            timestampMs = payload.timestampMs,
+            creatorPeerId = payload.creatorPeerId,
+            title = payload.title,
+            mimeType = payload.mimeType,
+            contentSize = payload.contentSize,
+            hasBlob = repo.hasBlob(hashHex),
+            isLocal = false
+        )
+        Log.d(TAG, "LEDGER_RECORD merged hash=${hashHex.take(12)}… from ${peerID.take(8)}")
+    }
+
+    /**
      * Handle broadcast or private message
      */
     suspend fun handleMessage(routed: RoutedPacket) {
@@ -384,16 +428,42 @@ class MessageHandler(private val myPeerID: String, private val appContext: andro
         val peerID = routed.peerID ?: "unknown"
         
         // Enforce: only accept public messages from verified peers we know
-        val peerInfo = delegate?.getPeerInfo(peerID)
-        if (peerInfo == null || !peerInfo.isVerifiedNickname) {
-            Log.w(TAG, "🚫 Dropping public message from unverified or unknown peer ${peerID.take(8)}...")
-            return
-        }
-        
         try {
             // Try file packet first (voice, image, etc.) and log outcome for FILE_TRANSFER
             val isFileTransfer = com.bitchat.android.protocol.MessageType.fromValue(packet.type) == com.bitchat.android.protocol.MessageType.FILE_TRANSFER
             val file = com.bitchat.android.model.BitchatFilePacket.decode(packet.payload)
+            if (file != null && isFileTransfer && LedgerBlobNames.isLedgerBlob(file)) {
+                val hash = LedgerBlobNames.parseHash(file) ?: return
+                val calc = LedgerRepository.sha256Hex(file.content)
+                if (!calc.equals(hash, ignoreCase = true)) {
+                    Log.w(TAG, "ledger blob: sha256 mismatch")
+                    return
+                }
+                val repo = LedgerRepository.getInstance(appContext)
+                if (!repo.writeBlob(hash, file.content)) return
+                repo.markHasBlob(hash)
+                val displayName = Regex("^ledger_[0-9a-f]{64}_(.+)$", RegexOption.IGNORE_CASE)
+                    .matchEntire(file.fileName)?.groupValues?.getOrNull(1) ?: "document"
+                if (!repo.exists(hash)) {
+                    repo.mergeRecord(
+                        hashHex = hash,
+                        timestampMs = packet.timestamp.toLong(),
+                        creatorPeerId = peerID,
+                        title = displayName,
+                        mimeType = file.mimeType,
+                        contentSize = file.fileSize,
+                        hasBlob = true,
+                        isLocal = false
+                    )
+                }
+                Log.d(TAG, "📥 ledger blob stored hash=${hash.take(12)}…")
+                return
+            }
+            val peerInfo = delegate?.getPeerInfo(peerID)
+            if (peerInfo == null || !peerInfo.isVerifiedNickname) {
+                Log.w(TAG, "🚫 Dropping public message from unverified or unknown peer ${peerID.take(8)}...")
+                return
+            }
             if (file != null) {
                 if (isFileTransfer) {
                     Log.d(TAG, "📥 FILE_TRANSFER decode success (broadcast): name='${file.fileName}', size=${file.fileSize}, mime='${file.mimeType}', from=${peerID.take(8)}")

@@ -6,9 +6,9 @@ import com.bitchat.android.ui.theme.ThemePreferenceManager
 import com.bitchat.android.net.ArtiTorManager
 
 /**
- * Main application class for bitchat Android
+ * Main application class for Swarm Net Android
  */
-class BitchatApplication : Application() {
+class SwarmNetApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
@@ -49,6 +49,9 @@ class BitchatApplication : Application() {
 
         // Initialize mesh service preferences
         try { com.bitchat.android.service.MeshServicePreferences.init(this) } catch (_: Exception) { }
+
+        // Local mesh ledger (content-addressed documents)
+        try { com.bitchat.android.ledger.LedgerRepository.getInstance(this) } catch (_: Exception) { }
 
         // Proactively start the foreground service to keep mesh alive
         try { com.bitchat.android.service.MeshForegroundService.start(this) } catch (_: Exception) { }

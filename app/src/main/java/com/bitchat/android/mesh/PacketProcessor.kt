@@ -146,6 +146,7 @@ class PacketProcessor(private val myPeerID: String) {
             MessageType.ANNOUNCE -> handleAnnounce(routed)
             MessageType.MESSAGE -> handleMessage(routed)
             MessageType.FILE_TRANSFER -> handleMessage(routed) // treat same routing path; parsing happens in handler
+            MessageType.LEDGER_RECORD -> handleLedgerRecord(routed)
             MessageType.LEAVE -> handleLeave(routed)
             MessageType.FRAGMENT -> handleFragment(routed)
             MessageType.REQUEST_SYNC -> handleRequestSync(routed)
@@ -245,6 +246,12 @@ class PacketProcessor(private val myPeerID: String) {
         Log.d(TAG, "Processing REQUEST_SYNC from ${formatPeerForLog(peerID)}")
         delegate?.handleRequestSync(routed)
     }
+
+    private suspend fun handleLedgerRecord(routed: RoutedPacket) {
+        val peerID = routed.peerID ?: "unknown"
+        Log.d(TAG, "Processing LEDGER_RECORD from ${formatPeerForLog(peerID)}")
+        delegate?.handleLedgerRecord(routed)
+    }
     
     /**
      * Handle delivery acknowledgment
@@ -319,6 +326,7 @@ interface PacketProcessorDelegate {
     fun handleLeave(routed: RoutedPacket)
     fun handleFragment(packet: BitchatPacket): BitchatPacket?
     fun handleRequestSync(routed: RoutedPacket)
+    fun handleLedgerRecord(routed: RoutedPacket)
     
     // Communication
     fun sendAnnouncementToPeer(peerID: String)

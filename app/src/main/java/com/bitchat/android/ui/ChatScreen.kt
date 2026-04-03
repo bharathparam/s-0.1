@@ -584,4 +584,22 @@ private fun ChatDialogs(
             }
         )
     }
+
+    val showMessageByPeerId by viewModel.showMessageByPeerId.collectAsStateWithLifecycle()
+    if (showMessageByPeerId) {
+        MessageByPeerIdSheet(
+            isPresented = true,
+            viewModel = viewModel,
+            onDismiss = { viewModel.hideMessageByPeerIdSheet() }
+        )
+    }
+
+    val showLedgerLibrary by viewModel.showLedgerLibrary.collectAsStateWithLifecycle()
+    if (showLedgerLibrary) {
+        LedgerLibrarySheet(
+            isPresented = true,
+            viewModel = viewModel,
+            onDismiss = { viewModel.hideLedgerLibrarySheet() }
+        )
+    }
 }

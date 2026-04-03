@@ -6,6 +6,7 @@ build/
 !*/build/generated/
 !*/build/intermediates/
 local.properties
+.jdk/
 .gradle/
 captures/
 .externalNativeBuild/

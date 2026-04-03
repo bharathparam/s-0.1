@@ -14,6 +14,8 @@ import com.bitchat.android.protocol.MessageType
 import com.bitchat.android.protocol.SpecialRecipients
 import com.bitchat.android.model.RequestSyncPacket
 import com.bitchat.android.sync.GossipSyncManager
+import com.bitchat.android.ledger.LedgerRecordPayload
+import com.bitchat.android.ledger.LedgerRepository
 import com.bitchat.android.util.toHexString
 import com.bitchat.android.services.VerificationService
 import kotlinx.coroutines.*
@@ -551,6 +553,10 @@ class BluetoothMeshService(private val context: Context) {
                 val req = RequestSyncPacket.decode(routed.packet.payload) ?: return
                 gossipSyncManager.handleRequestSync(fromPeer, req)
             }
+
+            override fun handleLedgerRecord(routed: RoutedPacket) {
+                serviceScope.launch { messageHandler.handleLedgerRecord(routed) }
+            }
         }
         
         // BluetoothConnectionManager delegates
@@ -755,6 +761,83 @@ class BluetoothMeshService(private val context: Context) {
             } catch (e: Exception) {
             Log.e(TAG, "❌ sendFileBroadcast failed: ${e.message}", e)
             Log.e(TAG, "❌ File: name=${file.fileName}, size=${file.fileSize}")
+        }
+    }
+
+    /**
+     * Publishes a content-addressed document to the mesh: signed LEDGER_RECORD metadata,
+     * then the raw bytes as a verified broadcast FILE_TRANSFER with a ledger-prefixed name.
+     */
+    fun publishLedgerDocument(sourceFile: java.io.File, title: String, mimeType: String) {
+        serviceScope.launch(Dispatchers.IO) {
+            try {
+                val bytes = sourceFile.readBytes()
+                val maxBytes = 6 * 1024 * 1024
+                if (bytes.size > maxBytes) {
+                    Log.w(TAG, "Ledger publish: file too large (${bytes.size} bytes, max=$maxBytes)")
+                    return@launch
+                }
+                val md = java.security.MessageDigest.getInstance("SHA-256")
+                val hashBytes = md.digest(bytes)
+                val hashHex = hashBytes.joinToString("") { b -> "%02x".format(b) }
+                val safeTitle = title.trim().ifBlank { sourceFile.nameWithoutExtension }.take(200)
+                val mime = mimeType.ifBlank { "application/octet-stream" }.take(120)
+                val record = LedgerRecordPayload.buildSigned(
+                    contentHashSha256 = hashBytes,
+                    timestampMs = System.currentTimeMillis(),
+                    creatorPeerId = myPeerID,
+                    title = safeTitle,
+                    mimeType = mime,
+                    contentSize = bytes.size.toLong(),
+                    encryptionService = encryptionService
+                ) ?: run {
+                    Log.e(TAG, "Ledger: failed to build signed record")
+                    return@launch
+                }
+                val encoded = record.encode()
+                val repo = LedgerRepository.getInstance(context)
+                repo.mergeRecord(
+                    hashHex, record.timestampMs, myPeerID, safeTitle, mime,
+                    record.contentSize, hasBlob = true, isLocal = true
+                )
+                if (!repo.writeBlob(hashHex, bytes)) {
+                    Log.e(TAG, "Ledger: blob write failed")
+                    return@launch
+                }
+
+                if (!isActive) {
+                    Log.w(TAG, "Ledger: saved locally; mesh not active — skipping broadcast until mesh starts")
+                    return@launch
+                }
+
+                val metaPacket = BitchatPacket(
+                    version = 1u,
+                    type = MessageType.LEDGER_RECORD.value,
+                    senderID = hexStringToByteArray(myPeerID),
+                    recipientID = SpecialRecipients.BROADCAST,
+                    timestamp = System.currentTimeMillis().toULong(),
+                    payload = encoded,
+                    signature = null,
+                    ttl = MAX_TTL
+                )
+                val signedMeta = signPacketBeforeBroadcast(metaPacket)
+                connectionManager.broadcastPacket(RoutedPacket(signedMeta))
+
+                delay(450)
+
+                val base = sourceFile.name.replace(Regex("[^A-Za-z0-9._-]"), "_").take(80)
+                    .ifBlank { "doc" }
+                val broadcastName = "ledger_${hashHex}_$base"
+                val filePacket = com.bitchat.android.model.BitchatFilePacket(
+                    broadcastName,
+                    bytes.size.toLong(),
+                    mime,
+                    bytes
+                )
+                sendFileBroadcast(filePacket)
+            } catch (e: Exception) {
+                Log.e(TAG, "publishLedgerDocument: ${e.message}", e)
+            }
         }
     }
 

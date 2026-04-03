@@ -122,6 +122,12 @@ class ChatState(
     private val _showMeshPeerList = MutableStateFlow(false)
     val showMeshPeerList: StateFlow<Boolean> = _showMeshPeerList.asStateFlow()
 
+    private val _showMessageByPeerId = MutableStateFlow(false)
+    val showMessageByPeerId: StateFlow<Boolean> = _showMessageByPeerId.asStateFlow()
+
+    private val _showLedgerLibrary = MutableStateFlow(false)
+    val showLedgerLibrary: StateFlow<Boolean> = _showLedgerLibrary.asStateFlow()
+
     private val _privateChatSheetPeer = MutableStateFlow<String?>(null)
     val privateChatSheetPeer: StateFlow<String?> = _privateChatSheetPeer.asStateFlow()
 
@@ -191,6 +197,7 @@ class ChatState(
     fun getGeohashPeopleValue() = _geohashPeople.value
 
     fun getShowMeshPeerListValue() = _showMeshPeerList.value
+    fun getShowMessageByPeerIdValue() = _showMessageByPeerId.value
     fun getPrivateChatSheetPeerValue() = _privateChatSheetPeer.value
 
     fun getTeleportedGeoValue() = _teleportedGeo.value
@@ -340,6 +347,14 @@ class ChatState(
 
     fun setShowMeshPeerList(show: Boolean) {
         _showMeshPeerList.value = show
+    }
+
+    fun setShowMessageByPeerId(show: Boolean) {
+        _showMessageByPeerId.value = show
+    }
+
+    fun setShowLedgerLibrary(show: Boolean) {
+        _showLedgerLibrary.value = show
     }
 
     fun setPrivateChatSheetPeer(peerID: String?) {

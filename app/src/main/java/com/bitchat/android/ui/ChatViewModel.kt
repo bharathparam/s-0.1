@@ -20,8 +20,8 @@ import com.bitchat.android.protocol.BitchatPacket
 
 import kotlinx.coroutines.launch
 import com.bitchat.android.util.NotificationIntervalManager
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.util.Date
 import kotlin.random.Random
 import com.bitchat.android.services.VerificationService
@@ -33,7 +33,7 @@ import com.bitchat.android.util.hexEncodedString
 import java.security.MessageDigest
 
 /**
- * Refactored ChatViewModel - Main coordinator for bitchat functionality
+ * Refactored ChatViewModel - Main coordinator for Swarm Net functionality
  * Delegates specific responsibilities to specialized managers while maintaining 100% iOS compatibility
  */
 class ChatViewModel(
@@ -176,6 +176,8 @@ class ChatViewModel(
     val peerDirect: StateFlow<Map<String, Boolean>> = state.peerDirect
     val showAppInfo: StateFlow<Boolean> = state.showAppInfo
     val showMeshPeerList: StateFlow<Boolean> = state.showMeshPeerList
+    val showMessageByPeerId: StateFlow<Boolean> = state.showMessageByPeerId
+    val showLedgerLibrary: StateFlow<Boolean> = state.showLedgerLibrary
     val privateChatSheetPeer: StateFlow<String?> = state.privateChatSheetPeer
     val showVerificationSheet: StateFlow<Boolean> = state.showVerificationSheet
     val showSecurityVerificationSheet: StateFlow<Boolean> = state.showSecurityVerificationSheet
@@ -808,6 +810,50 @@ class ChatViewModel(
 
     fun hideMeshPeerList() {
         state.setShowMeshPeerList(false)
+    }
+
+    fun showMessageByPeerIdSheet() {
+        state.setShowMessageByPeerId(true)
+    }
+
+    fun hideMessageByPeerIdSheet() {
+        state.setShowMessageByPeerId(false)
+    }
+
+    /**
+     * Opens the private chat sheet after normalizing peer id (hex / nostr alias).
+     */
+    fun openPrivateChatFromPeerIdInput(peerId: String) {
+        state.setShowMessageByPeerId(false)
+        state.setShowMeshPeerList(false)
+        showPrivateChatSheet(peerId)
+    }
+
+    fun showLedgerLibrarySheet() {
+        state.setShowLedgerLibrary(true)
+    }
+
+    fun hideLedgerLibrarySheet() {
+        state.setShowLedgerLibrary(false)
+    }
+
+    fun publishLedgerFromUri(uri: android.net.Uri) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val app = getApplication<Application>()
+            val path = com.bitchat.android.features.file.FileUtils.copyFileForSending(app, uri) ?: return@launch
+            val file = java.io.File(path)
+            val mime = try {
+                app.contentResolver.getType(uri)
+            } catch (_: Exception) {
+                null
+            } ?: "application/octet-stream"
+            val title = file.nameWithoutExtension.ifBlank { "document" }
+            meshService.publishLedgerDocument(file, title, mime)
+            try {
+                file.delete()
+            } catch (_: Exception) {
+            }
+        }
     }
 
     fun showPrivateChatSheet(peerID: String) {

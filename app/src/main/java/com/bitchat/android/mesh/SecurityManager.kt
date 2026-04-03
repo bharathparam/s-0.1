@@ -5,6 +5,7 @@ import com.bitchat.android.crypto.EncryptionService
 import com.bitchat.android.protocol.BitchatPacket
 import com.bitchat.android.protocol.MessageType
 import com.bitchat.android.model.RoutedPacket
+import com.bitchat.android.ledger.LedgerRecordPayload
 import com.bitchat.android.util.toHexString
 import kotlinx.coroutines.*
 import java.util.*
@@ -241,7 +242,8 @@ class SecurityManager(private val encryptionService: EncryptionService, private 
             if (MessageType.fromValue(packet.type) !in setOf(
                     MessageType.ANNOUNCE,
                     MessageType.MESSAGE,
-                    MessageType.FILE_TRANSFER
+                    MessageType.FILE_TRANSFER,
+                    MessageType.LEDGER_RECORD
                 )) {
                 return true
             }
@@ -261,6 +263,26 @@ class SecurityManager(private val encryptionService: EncryptionService, private 
                     signingPublicKey = announcement?.signingPublicKey
                 } catch (e: Exception) {
                     Log.w(TAG, "Failed to decode announcement for key extraction: ${e.message}")
+                }
+            } else if (MessageType.fromValue(packet.type) == MessageType.LEDGER_RECORD) {
+                // LEDGER_RECORD embeds the creator signing key; use peer roster when it matches.
+                val ledger = try {
+                    LedgerRecordPayload.decode(packet.payload)
+                } catch (_: Exception) {
+                    null
+                }
+                val peerInfo = delegate?.getPeerInfo(peerID)
+                signingPublicKey = when {
+                    peerInfo?.signingPublicKey != null && ledger?.signingPublicKey != null &&
+                        peerInfo.signingPublicKey.contentEquals(ledger.signingPublicKey) ->
+                        peerInfo.signingPublicKey
+                    peerInfo?.signingPublicKey != null && ledger?.signingPublicKey != null &&
+                        !peerInfo.signingPublicKey.contentEquals(ledger.signingPublicKey) -> {
+                        Log.w(TAG, "LEDGER_RECORD signing key mismatch vs peer roster for $peerID")
+                        null
+                    }
+                    peerInfo?.signingPublicKey != null -> peerInfo.signingPublicKey
+                    else -> ledger?.signingPublicKey
                 }
             } else {
                 // Standard Case: Get key from known peer info

@@ -91,6 +91,94 @@ fun MeshPeerListSheet(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(top = 64.dp, bottom = 20.dp)
                 ) {
+                    item(key = "message_by_peer_id") {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    viewModel.showMessageByPeerIdSheet()
+                                    onDismiss()
+                                }
+                                .padding(horizontal = 24.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Lock,
+                                contentDescription = null,
+                                tint = colorScheme.primary,
+                                modifier = Modifier.size(22.dp)
+                            )
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = stringResource(R.string.network_message_by_id_row),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = colorScheme.primary,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    text = stringResource(R.string.message_by_id_title),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = colorScheme.onSurface.copy(alpha = 0.65f)
+                                )
+                            }
+                            Icon(
+                                imageVector = Icons.Filled.NavigateNext,
+                                contentDescription = null,
+                                modifier = Modifier.size(22.dp),
+                                tint = colorScheme.onSurface.copy(alpha = 0.45f)
+                            )
+                        }
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            color = colorScheme.outline.copy(alpha = 0.25f)
+                        )
+                    }
+
+                    item(key = "ledger_library") {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    viewModel.showLedgerLibrarySheet()
+                                    onDismiss()
+                                }
+                                .padding(horizontal = 24.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Description,
+                                contentDescription = null,
+                                tint = colorScheme.primary,
+                                modifier = Modifier.size(22.dp)
+                            )
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = stringResource(R.string.network_ledger_row),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = colorScheme.primary,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    text = stringResource(R.string.ledger_library_title),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = colorScheme.onSurface.copy(alpha = 0.65f)
+                                )
+                            }
+                            Icon(
+                                imageVector = Icons.Filled.NavigateNext,
+                                contentDescription = null,
+                                modifier = Modifier.size(22.dp),
+                                tint = colorScheme.onSurface.copy(alpha = 0.45f)
+                            )
+                        }
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            color = colorScheme.outline.copy(alpha = 0.25f)
+                        )
+                    }
+
                     // Channels section
                     if (joinedChannels.isNotEmpty()) {
                         item(key = "channels_header") {
@@ -821,6 +909,41 @@ fun PrivateChatSheet(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     Spacer(modifier = Modifier.height(64.dp))
+
+                    if (!isNostrPeer) {
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                            color = colorScheme.primaryContainer.copy(alpha = 0.4f),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Lock,
+                                    contentDescription = null,
+                                    tint = Color(0xFFFF9500),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Column {
+                                    Text(
+                                        text = stringResource(R.string.private_dm_encryption_banner_title),
+                                        style = MaterialTheme.typography.labelLarge,
+                                        color = colorScheme.onPrimaryContainer
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.private_dm_encryption_banner_body),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = colorScheme.onPrimaryContainer.copy(alpha = 0.88f)
+                                    )
+                                }
+                            }
+                        }
+                    }
 
                     HorizontalDivider(color = colorScheme.outline.copy(alpha = 0.3f))
 

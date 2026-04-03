@@ -182,7 +182,7 @@ fun PeerCounter(
     
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.clickable { onClick() }.padding(end = 8.dp) // Added right margin to match "bitchat" logo spacing
+        modifier = modifier.clickable { onClick() }.padding(end = 8.dp) // Added right margin to match app logo spacing
     ) {
         Icon(
             imageVector = Icons.Default.Group,
@@ -392,6 +392,15 @@ private fun MainHeader(
                     tint = Color(0xFFFF9500)
                 )
             }
+
+            Icon(
+                imageVector = Icons.Outlined.PersonSearch,
+                contentDescription = stringResource(R.string.cd_message_by_peer_id),
+                modifier = Modifier
+                    .size(18.dp)
+                    .clickable { viewModel.showMessageByPeerIdSheet() },
+                tint = colorScheme.primary.copy(alpha = 0.9f)
+            )
 
             // Location channels button (matching iOS implementation) and bookmark grouped tightly
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(end = 4.dp)) {
