@@ -422,7 +422,7 @@ private fun ChatFloatingHeader(
             .fillMaxWidth()
             .zIndex(1f)
             .windowInsetsPadding(WindowInsets.statusBars), // Extend into status bar area
-        color = colorScheme.background // Solid background color extending into status bar
+        color = colorScheme.surface // WA uses distinct surface for app bar
     ) {
         TopAppBar(
             title = {

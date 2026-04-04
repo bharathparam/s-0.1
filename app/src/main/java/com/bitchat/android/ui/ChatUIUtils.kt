@@ -57,7 +57,7 @@ fun formatMessageAsAnnotatedString(
     if (message.sender != "system") {
         // Get base color for this peer (iOS-style color assignment)
         val baseColor = if (isSelf) {
-            Color(0xFFBDBDBD) // Neutral silver for self (legible on both black/white surfaces)
+            colorScheme.onPrimaryContainer // Distinct WA text color for self
         } else {
             getPeerColor(message, isDark)
         }
@@ -65,56 +65,39 @@ fun formatMessageAsAnnotatedString(
         // Split sender into base name and hashtag suffix
         val (baseName, suffix) = splitSuffix(message.sender)
         
-        // Sender prefix "<@"
-        builder.pushStyle(SpanStyle(
-            color = baseColor,
-            fontSize = BASE_FONT_SIZE.sp,
-            fontWeight = if (isSelf) FontWeight.Bold else FontWeight.Medium
-        ))
-        builder.append("<@")
-        builder.pop()
-        
-        // Base name (clickable)
-        builder.pushStyle(SpanStyle(
-            color = baseColor,
-            fontSize = BASE_FONT_SIZE.sp,
-            fontWeight = if (isSelf) FontWeight.Bold else FontWeight.Medium
-        ))
-        val nicknameStart = builder.length
-        val truncatedBase = truncateNickname(baseName)
-        builder.append(truncatedBase)
-        val nicknameEnd = builder.length
-        
-        // Add click annotation for nickname (store canonical sender name with hash if available)
         if (!isSelf) {
+            // Sender name (WhatsApp style: no <@> wrap)
+            builder.pushStyle(SpanStyle(
+                color = baseColor,
+                fontSize = (BASE_FONT_SIZE - 2).sp,
+                fontWeight = FontWeight.Bold
+            ))
+            val nicknameStart = builder.length
+            val truncatedBase = truncateNickname(baseName)
+            builder.append(truncatedBase)
+            val nicknameEnd = builder.length
+            
+            // Add click annotation for nickname (store canonical sender name with hash if available)
             builder.addStringAnnotation(
                 tag = "nickname_click",
                 annotation = (message.originalSender ?: message.sender),
                 start = nicknameStart,
                 end = nicknameEnd
             )
-        }
-        builder.pop()
-        
-        // Hashtag suffix in lighter color (iOS style)
-        if (suffix.isNotEmpty()) {
-            builder.pushStyle(SpanStyle(
-                color = baseColor.copy(alpha = 0.6f),
-                fontSize = BASE_FONT_SIZE.sp,
-                fontWeight = if (isSelf) FontWeight.Bold else FontWeight.Medium
-            ))
-            builder.append(suffix)
             builder.pop()
+            
+            // Hashtag suffix in lighter color
+            if (suffix.isNotEmpty()) {
+                builder.pushStyle(SpanStyle(
+                    color = baseColor.copy(alpha = 0.6f),
+                    fontSize = (BASE_FONT_SIZE - 2).sp,
+                    fontWeight = FontWeight.SemiBold
+                ))
+                builder.append(suffix)
+                builder.pop()
+            }
+            builder.append("\n") // Newline after name
         }
-        
-        // Sender suffix "> "
-        builder.pushStyle(SpanStyle(
-            color = baseColor,
-            fontSize = BASE_FONT_SIZE.sp,
-            fontWeight = if (isSelf) FontWeight.Bold else FontWeight.Medium
-        ))
-        builder.append("> ")
-        builder.pop()
         
         // Message content with iOS-style hashtag and mention highlighting
         appendIOSFormattedContent(builder, message.content, message.mentions, currentUserNickname, baseColor, isSelf, isDark)
@@ -122,10 +105,10 @@ fun formatMessageAsAnnotatedString(
         // iOS-style timestamp at the END (smaller, grey)
         // Timestamp (and optional PoW badge)
         builder.pushStyle(SpanStyle(
-            color = Color.Gray.copy(alpha = 0.7f),
-            fontSize = (BASE_FONT_SIZE - 4).sp
+            color = baseColor.copy(alpha = 0.65f),
+            fontSize = (BASE_FONT_SIZE - 5).sp
         ))
-        builder.append(" [${timeFormatter.format(message.timestamp)}]")
+        builder.append("  ${timeFormatter.format(message.timestamp)}")
         // If message has valid PoW difficulty, append bits immediately after timestamp with minimal spacing
         message.powDifficulty?.let { bits ->
             if (bits > 0) {
@@ -177,60 +160,51 @@ fun formatMessageHeaderAnnotatedString(
         val baseColor = if (isSelf) Color(0xFFBDBDBD) else getPeerColor(message, isDark)
         val (baseName, suffix) = splitSuffix(message.sender)
 
-        // "<@"
-        builder.pushStyle(SpanStyle(
-            color = baseColor,
-            fontSize = BASE_FONT_SIZE.sp,
-            fontWeight = if (isSelf) FontWeight.Bold else FontWeight.Medium
-        ))
-        builder.append("<@")
-        builder.pop()
-
-        // Base name (clickable when not self)
-        builder.pushStyle(SpanStyle(
-            color = baseColor,
-            fontSize = BASE_FONT_SIZE.sp,
-            fontWeight = if (isSelf) FontWeight.Bold else FontWeight.Medium
-        ))
-        val nicknameStart = builder.length
-        builder.append(truncateNickname(baseName))
-        val nicknameEnd = builder.length
         if (!isSelf) {
+            // Base name (clickable when not self)
+            builder.pushStyle(SpanStyle(
+                color = baseColor,
+                fontSize = (BASE_FONT_SIZE - 2).sp,
+                fontWeight = FontWeight.Bold
+            ))
+            val nicknameStart = builder.length
+            builder.append(truncateNickname(baseName))
+            val nicknameEnd = builder.length
             builder.addStringAnnotation(
                 tag = "nickname_click",
                 annotation = (message.originalSender ?: message.sender),
                 start = nicknameStart,
                 end = nicknameEnd
             )
-        }
-        builder.pop()
+            builder.pop()
 
-        // Hashtag suffix
-        if (suffix.isNotEmpty()) {
+            // Hashtag suffix
+            if (suffix.isNotEmpty()) {
+                builder.pushStyle(SpanStyle(
+                    color = baseColor.copy(alpha = 0.6f),
+                    fontSize = (BASE_FONT_SIZE - 2).sp,
+                    fontWeight = FontWeight.SemiBold
+                ))
+                builder.append(suffix)
+                builder.pop()
+            }
+        } else {
+            // For own messages, show "You" if header is forced
             builder.pushStyle(SpanStyle(
-                color = baseColor.copy(alpha = 0.6f),
-                fontSize = BASE_FONT_SIZE.sp,
-                fontWeight = if (isSelf) FontWeight.Bold else FontWeight.Medium
+                color = baseColor,
+                fontSize = (BASE_FONT_SIZE - 2).sp,
+                fontWeight = FontWeight.Bold
             ))
-            builder.append(suffix)
+            builder.append("You")
             builder.pop()
         }
 
-        // Sender suffix ">"
-        builder.pushStyle(SpanStyle(
-            color = baseColor,
-            fontSize = BASE_FONT_SIZE.sp,
-            fontWeight = if (isSelf) FontWeight.Bold else FontWeight.Medium
-        ))
-        builder.append(">")
-        builder.pop()
-
         // Timestamp and optional PoW bits, matching normal message appearance
         builder.pushStyle(SpanStyle(
-            color = Color.Gray.copy(alpha = 0.7f),
-            fontSize = (BASE_FONT_SIZE - 4).sp
+            color = baseColor.copy(alpha = 0.65f),
+            fontSize = (BASE_FONT_SIZE - 5).sp
         ))
-        builder.append("  [${timeFormatter.format(message.timestamp)}]")
+        builder.append("  ${timeFormatter.format(message.timestamp)}")
         message.powDifficulty?.let { bits ->
             if (bits > 0) builder.append(" ⛨${bits}b")
         }

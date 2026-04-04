@@ -17,66 +17,57 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 
 // ─── Dark Palette ────────────────────────────────────────────────────
-// True OLED blacks layered with warm carbon grays.
-// Primary = pure white for maximum contrast. Tertiary = accent red.
+// WhatsApp Dark Mode style
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFFFFFFFF),
-    onPrimary = Color(0xFF0A0A0A),
-    primaryContainer = Color(0xFF1E1E1E),
-    onPrimaryContainer = Color(0xFFE0E0E0),
-    secondary = Color(0xFFB0B0B0),
-    onSecondary = Color(0xFF0A0A0A),
-    secondaryContainer = Color(0xFF2A2A2A),
-    onSecondaryContainer = Color(0xFFD0D0D0),
-    tertiary = Color(0xFFD93025),            // Accent red – sparingly
-    onTertiary = Color.White,
-    tertiaryContainer = Color(0xFF3D0E0A),
-    onTertiaryContainer = Color(0xFFFFDAD6),
-    background = Color(0xFF000000),          // True OLED Black
-    onBackground = Color(0xFFEAEAEA),
-    surface = Color(0xFF0E0E0E),             // Level 1 – cards
-    onSurface = Color(0xFFEAEAEA),
-    surfaceVariant = Color(0xFF1A1A1A),      // Level 2 – elevated
-    onSurfaceVariant = Color(0xFF9E9E9E),
+    primary = Color(0xFF00A884), // Accent green (Floating buttons, checks)
+    onPrimary = Color.White,
+    primaryContainer = Color(0xFF005C4B), // Outgoing message bubble
+    onPrimaryContainer = Color(0xFFE9EDEF), // Text on outgoing
+    secondary = Color(0xFF202C33),
+    onSecondary = Color(0xFFE9EDEF),
+    secondaryContainer = Color(0xFF182229),
+    onSecondaryContainer = Color(0xFF8696A0),
+    tertiary = Color(0xFF53BDEB), // Links or blue text
+    onTertiary = Color.Black,
+    tertiaryContainer = Color(0xFF027EB5),
+    onTertiaryContainer = Color.White,
+    background = Color(0xFF0B141A), // Chat background
+    onBackground = Color(0xFFE9EDEF),
+    surface = Color(0xFF202C33), // App bar, incoming messages
+    onSurface = Color(0xFFE9EDEF),
+    surfaceVariant = Color(0xFF2A3942), // Dialogs, secondary surface
+    onSurfaceVariant = Color(0xFF8696A0), // Muted text, timestamps
     surfaceTint = Color.Transparent,
     outline = Color(0xFF3A3A3A),
-    outlineVariant = Color(0xFF252525),
-    error = Color(0xFFD93025),
-    onError = Color.White,
-    inverseSurface = Color(0xFFE4E4E4),
-    inverseOnSurface = Color(0xFF1A1A1A),
-    inversePrimary = Color(0xFF1A1A1A)
+    error = Color(0xFFEF9A9A),
+    onError = Color.Black
 )
 
 // ─── Light Palette ───────────────────────────────────────────────────
-// Paper white with warm neutral grays: editorial, airy, museum-like.
+// WhatsApp Light Mode style
 private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF0A0A0A),
+    primary = Color(0xFF008069), // App bar mostly, and accents
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFF0F0F0),
-    onPrimaryContainer = Color(0xFF1A1A1A),
-    secondary = Color(0xFF666666),
-    onSecondary = Color.White,
-    secondaryContainer = Color(0xFFE8E8E8),
-    onSecondaryContainer = Color(0xFF333333),
-    tertiary = Color(0xFFD93025),
+    primaryContainer = Color(0xFFD9FDD3), // Outgoing message bubble
+    onPrimaryContainer = Color(0xFF111B21), // Text on outgoing
+    secondary = Color(0xFFFFFFFF),
+    onSecondary = Color(0xFF111B21),
+    secondaryContainer = Color(0xFFF0F2F5),
+    onSecondaryContainer = Color(0xFF667781),
+    tertiary = Color(0xFF027EB5), // Links
     onTertiary = Color.White,
-    tertiaryContainer = Color(0xFFFFEDE9),
-    onTertiaryContainer = Color(0xFF3D0E0A),
-    background = Color(0xFFFAFAFA),
-    onBackground = Color(0xFF0E0E0E),
-    surface = Color(0xFFFFFFFF),
-    onSurface = Color(0xFF0E0E0E),
-    surfaceVariant = Color(0xFFF2F2F2),
-    onSurfaceVariant = Color(0xFF666666),
+    tertiaryContainer = Color(0xFF53BDEB),
+    onTertiaryContainer = Color.Black,
+    background = Color(0xFFEFE7DE), // Chat background
+    onBackground = Color(0xFF111B21),
+    surface = Color(0xFFFFFFFF), // App bar (sometimes), incoming messages
+    onSurface = Color(0xFF111B21),
+    surfaceVariant = Color(0xFFF0F2F5), // Secondary surfaces
+    onSurfaceVariant = Color(0xFF667781), // Muted text
     surfaceTint = Color.Transparent,
-    outline = Color(0xFFDEDEDE),
-    outlineVariant = Color(0xFFEEEEEE),
-    error = Color(0xFFD93025),
-    onError = Color.White,
-    inverseSurface = Color(0xFF1A1A1A),
-    inverseOnSurface = Color(0xFFE4E4E4),
-    inversePrimary = Color(0xFFE4E4E4)
+    outline = Color(0xFFD1D7DB),
+    error = Color(0xFFD32F2F),
+    onError = Color.White
 )
 
 @Composable

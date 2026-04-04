@@ -221,16 +221,24 @@ fun MessageItem(
                      message.sender.startsWith("$currentUserNickname#")
 
             Surface(
-                shape = MaterialTheme.shapes.large,
-                color = if (isSelfMessage) colorScheme.surfaceVariant else colorScheme.surface,
+                shape = if (isSelfMessage) {
+                    androidx.compose.foundation.shape.RoundedCornerShape(
+                        topStart = 16.dp, topEnd = 4.dp, bottomEnd = 16.dp, bottomStart = 16.dp
+                    )
+                } else {
+                    androidx.compose.foundation.shape.RoundedCornerShape(
+                        topStart = 4.dp, topEnd = 16.dp, bottomEnd = 16.dp, bottomStart = 16.dp
+                    )
+                },
+                color = if (isSelfMessage) colorScheme.primaryContainer else colorScheme.surface,
                 modifier = Modifier
-                    .fillMaxWidth(0.9f)
+                    .widthIn(min = 60.dp, max = 320.dp)
                     .align(if (isSelfMessage) Alignment.TopEnd else Alignment.TopStart)
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.Start,
                     verticalAlignment = Alignment.Top
                 ) {
@@ -532,7 +540,8 @@ fun MessageItem(
                 )
             },
             style = MaterialTheme.typography.bodyLarge.copy(
-                color = colorScheme.onSurface
+                color = if (isSelf) colorScheme.onPrimaryContainer else colorScheme.onSurface,
+                fontSize = 15.sp
             ),
             softWrap = true,
             overflow = TextOverflow.Visible,
