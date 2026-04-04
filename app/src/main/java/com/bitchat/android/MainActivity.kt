@@ -55,6 +55,7 @@ import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Forum
 import androidx.compose.material.icons.filled.Explore
+import androidx.compose.material.icons.filled.List
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
@@ -860,46 +861,125 @@ class MainActivity : OrientationAwareActivity() {
 fun MainScreen(chatViewModel: com.bitchat.android.ui.ChatViewModel) {
     var selectedTab by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(0) }
 
-    androidx.compose.foundation.layout.Column(
+    androidx.compose.foundation.layout.Box(
         modifier = androidx.compose.ui.Modifier.fillMaxSize()
     ) {
-        // ── Content area (above navigation bar) ──
-        androidx.compose.foundation.layout.Box(
-            modifier = androidx.compose.ui.Modifier.weight(1f)
-        ) {
-            when (selectedTab) {
-                0 -> com.bitchat.android.ui.ChatScreen(viewModel = chatViewModel)
-                1 -> com.bitchat.android.mapfeature.MapFeatureScreen()
-            }
+        // ── Content area (full bleed, no scaffold clipping) ──
+        when (selectedTab) {
+            0 -> com.bitchat.android.ui.ChatScreen(viewModel = chatViewModel)
+            1 -> com.bitchat.android.mapfeature.MapFeatureScreen()
+            2 -> com.bitchat.android.ui.ResourceBoardScreen()
         }
 
-        // ── Standard WhatsApp-like Bottom Navigation ──
-        androidx.compose.material3.NavigationBar(
-            containerColor = androidx.compose.material3.MaterialTheme.colorScheme.surface,
-            tonalElevation = 4.dp
+        // ── Floating capsule navigation dock ──
+        androidx.compose.foundation.layout.Box(
+            modifier = androidx.compose.ui.Modifier
+                .align(androidx.compose.ui.Alignment.BottomCenter)
+                .padding(bottom = 28.dp),
+            contentAlignment = androidx.compose.ui.Alignment.Center
         ) {
-            NavigationBarItem(
-                selected = selectedTab == 0,
-                onClick = { selectedTab = 0 },
-                icon = { androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.Filled.Forum, contentDescription = "Chat") },
-                label = { androidx.compose.material3.Text("Chats") },
-                colors = androidx.compose.material3.NavigationBarItemDefaults.colors(
-                    selectedIconColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                    unselectedIconColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant,
-                    indicatorColor = androidx.compose.material3.MaterialTheme.colorScheme.surfaceVariant
-                )
-            )
-            NavigationBarItem(
-                selected = selectedTab == 1,
-                onClick = { selectedTab = 1 },
-                icon = { androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.Filled.Explore, contentDescription = "Map") },
-                label = { androidx.compose.material3.Text("Map") },
-                colors = androidx.compose.material3.NavigationBarItemDefaults.colors(
-                    selectedIconColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                    unselectedIconColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant,
-                    indicatorColor = androidx.compose.material3.MaterialTheme.colorScheme.surfaceVariant
-                )
-            )
+            androidx.compose.material3.Surface(
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
+                color = androidx.compose.material3.MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
+                tonalElevation = 0.dp,
+                shadowElevation = 16.dp
+            ) {
+                androidx.compose.foundation.layout.Row(
+                    modifier = androidx.compose.ui.Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(4.dp),
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                ) {
+                    // Chat tab
+                    val chatColor = if (selectedTab == 0)
+                        androidx.compose.material3.MaterialTheme.colorScheme.primary
+                    else
+                        androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
+                    androidx.compose.material3.IconButton(
+                        onClick = { selectedTab = 0 },
+                        modifier = androidx.compose.ui.Modifier.size(48.dp)
+                    ) {
+                        androidx.compose.foundation.layout.Column(
+                            horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+                            verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
+                        ) {
+                            androidx.compose.material3.Icon(
+                                Icons.Filled.Forum,
+                                contentDescription = "Chat",
+                                tint = chatColor,
+                                modifier = androidx.compose.ui.Modifier.size(22.dp)
+                            )
+                            if (selectedTab == 0) {
+                                androidx.compose.foundation.layout.Spacer(modifier = androidx.compose.ui.Modifier.height(3.dp))
+                                androidx.compose.foundation.layout.Box(
+                                    modifier = androidx.compose.ui.Modifier
+                                        .size(4.dp)
+                                        .background(chatColor, androidx.compose.foundation.shape.CircleShape)
+                                )
+                            }
+                        }
+                    }
+
+                    // Map tab
+                    val mapColor = if (selectedTab == 1)
+                        androidx.compose.material3.MaterialTheme.colorScheme.primary
+                    else
+                        androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
+                    androidx.compose.material3.IconButton(
+                        onClick = { selectedTab = 1 },
+                        modifier = androidx.compose.ui.Modifier.size(48.dp)
+                    ) {
+                        androidx.compose.foundation.layout.Column(
+                            horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+                            verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
+                        ) {
+                            androidx.compose.material3.Icon(
+                                Icons.Filled.Explore,
+                                contentDescription = "Map",
+                                tint = mapColor,
+                                modifier = androidx.compose.ui.Modifier.size(22.dp)
+                            )
+                            if (selectedTab == 1) {
+                                androidx.compose.foundation.layout.Spacer(modifier = androidx.compose.ui.Modifier.height(3.dp))
+                                androidx.compose.foundation.layout.Box(
+                                    modifier = androidx.compose.ui.Modifier
+                                        .size(4.dp)
+                                        .background(mapColor, androidx.compose.foundation.shape.CircleShape)
+                                )
+                            }
+                        }
+                    }
+
+                    // Resources tab
+                    val resourcesColor = if (selectedTab == 2)
+                        androidx.compose.material3.MaterialTheme.colorScheme.primary
+                    else
+                        androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
+                    androidx.compose.material3.IconButton(
+                        onClick = { selectedTab = 2 },
+                        modifier = androidx.compose.ui.Modifier.size(48.dp)
+                    ) {
+                        androidx.compose.foundation.layout.Column(
+                            horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+                            verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
+                        ) {
+                            androidx.compose.material3.Icon(
+                                Icons.Filled.List,
+                                contentDescription = "Resources",
+                                tint = resourcesColor,
+                                modifier = androidx.compose.ui.Modifier.size(22.dp)
+                            )
+                            if (selectedTab == 2) {
+                                androidx.compose.foundation.layout.Spacer(modifier = androidx.compose.ui.Modifier.height(3.dp))
+                                androidx.compose.foundation.layout.Box(
+                                    modifier = androidx.compose.ui.Modifier
+                                        .size(4.dp)
+                                        .background(resourcesColor, androidx.compose.foundation.shape.CircleShape)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

@@ -472,8 +472,17 @@ class ChatViewModel(
     
     // MARK: - Message Sending
     
-    fun sendMessage(content: String) {
-        if (content.isEmpty()) return
+    fun sendMessage(rawContent: String) {
+        if (rawContent.isEmpty()) return
+
+        var content = rawContent
+        if (!content.startsWith("/") && !content.contains("📍 Location:")) {
+            val location = com.bitchat.android.geohash.LocationChannelManager.getInstance(getApplication()).lastLocation.value
+            if (location != null) {
+                val df = java.text.DecimalFormat("#.####")
+                content += "\n📍 Location: ${df.format(location.latitude)}, ${df.format(location.longitude)}"
+            }
+        }
         
         // Check for commands
         if (content.startsWith("/")) {
@@ -549,7 +558,8 @@ class ChatViewModel(
                         isRelay = false,
                         senderPeerID = meshService.myPeerID,
                         mentions = if (mentions.isNotEmpty()) mentions else null,
-                        channel = currentChannelValue
+                        channel = currentChannelValue,
+                        deliveryStatus = com.bitchat.android.model.DeliveryStatus.Sending
                     )
                 )
 
@@ -581,6 +591,18 @@ class ChatViewModel(
                 }
             }
         }
+    }
+
+    fun sendSosMessage() {
+        val location = com.bitchat.android.geohash.LocationChannelManager.getInstance(getApplication()).lastLocation.value
+        val locStr = if (location != null) {
+            val df = java.text.DecimalFormat("#.####")
+            "${df.format(location.latitude)}, ${df.format(location.longitude)}"
+        } else {
+            "Unknown location"
+        }
+        val content = "🚨 SOS: Need immediate help\n📍 Location: $locStr"
+        sendMessage(content)
     }
 
     // MARK: - Utility Functions

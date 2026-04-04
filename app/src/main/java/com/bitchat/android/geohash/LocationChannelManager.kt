@@ -50,7 +50,6 @@ class LocationChannelManager private constructor(private val context: Context) {
     private val locationManager: LocationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     private val locationProvider: LocationProvider
     private val geocoderProvider: GeocoderProvider = GeocoderFactory.get(context)
-    private var lastLocation: Location? = null
     private var geocodingJob: Job? = null
     private val gson = Gson()
     private var dataManager: com.bitchat.android.ui.DataManager? = null
@@ -101,6 +100,9 @@ class LocationChannelManager private constructor(private val context: Context) {
     
     private val _locationServicesEnabled = MutableStateFlow(false)
     val locationServicesEnabled: StateFlow<Boolean> = _locationServicesEnabled
+
+    private val _lastLocation = MutableStateFlow<Location?>(null)
+    val lastLocation: StateFlow<Location?> = _lastLocation
 
     private val _systemLocationEnabled = MutableStateFlow(checkSystemLocationEnabled())
     val systemLocationEnabled: StateFlow<Boolean> = _systemLocationEnabled
@@ -218,7 +220,7 @@ class LocationChannelManager private constructor(private val context: Context) {
         saveChannelSelection(channel)
 
         // Immediately recompute teleported status against the latest known location
-        lastLocation?.let { location ->
+        _lastLocation.value?.let { location ->
             when (channel) {
                 is ChannelID.Mesh -> {
                     _teleported.value = false
@@ -324,7 +326,7 @@ class LocationChannelManager private constructor(private val context: Context) {
     }
 
     private fun onLocationUpdated(location: Location) {
-        lastLocation = location
+        _lastLocation.value = location
         _isLoadingLocation.value = false
         computeChannels(location)
         reverseGeocodeIfNeeded(location)

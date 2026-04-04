@@ -103,6 +103,21 @@ fun ChatScreen(viewModel: ChatViewModel) {
         }
     }
 
+    var selectedFilter by remember { mutableStateOf(com.bitchat.android.model.DisasterPriority.GENERAL) }
+
+    val filteredMessages = displayMessages.filter { msg ->
+        when (selectedFilter) {
+            com.bitchat.android.model.DisasterPriority.GENERAL -> true // All messages
+            com.bitchat.android.model.DisasterPriority.WARNING -> {
+                msg.disasterPriority == com.bitchat.android.model.DisasterPriority.WARNING || 
+                msg.disasterPriority == com.bitchat.android.model.DisasterPriority.EMERGENCY
+            }
+            com.bitchat.android.model.DisasterPriority.EMERGENCY -> {
+                msg.disasterPriority == com.bitchat.android.model.DisasterPriority.EMERGENCY
+            }
+        }
+    }
+
     // Determine whether to show media buttons (only hide in geohash location chats)
     val showMediaButtons = when {
         currentChannel != null -> true
@@ -131,9 +146,56 @@ fun ChatScreen(viewModel: ChatViewModel) {
                         .height(headerHeight)
                 )
 
+                // Priority Filter Tabs
+                androidx.compose.material3.ScrollableTabRow(
+                    selectedTabIndex = when(selectedFilter) {
+                        com.bitchat.android.model.DisasterPriority.EMERGENCY -> 0
+                        com.bitchat.android.model.DisasterPriority.WARNING -> 1
+                        com.bitchat.android.model.DisasterPriority.GENERAL -> 2
+                    },
+                    modifier = Modifier.fillMaxWidth().height(48.dp),
+                    edgePadding = 16.dp,
+                    containerColor = colorScheme.surface,
+                    contentColor = colorScheme.onSurface,
+                    indicator = { tabPositions ->
+                        androidx.compose.material3.TabRowDefaults.SecondaryIndicator(
+                            modifier = with(androidx.compose.material3.TabRowDefaults) { Modifier.tabIndicatorOffset(
+                                tabPositions[
+                                    when(selectedFilter) {
+                                        com.bitchat.android.model.DisasterPriority.EMERGENCY -> 0
+                                        com.bitchat.android.model.DisasterPriority.WARNING -> 1
+                                        com.bitchat.android.model.DisasterPriority.GENERAL -> 2
+                                    }
+                                ]
+                            ) },
+                            color = when(selectedFilter) {
+                                com.bitchat.android.model.DisasterPriority.EMERGENCY -> Color(0xFFD93025)
+                                com.bitchat.android.model.DisasterPriority.WARNING -> Color(0xFFF29900)
+                                else -> colorScheme.primary
+                            }
+                        )
+                    }
+                ) {
+                    androidx.compose.material3.Tab(
+                        selected = selectedFilter == com.bitchat.android.model.DisasterPriority.EMERGENCY,
+                        onClick = { selectedFilter = com.bitchat.android.model.DisasterPriority.EMERGENCY },
+                        text = { Text("🚨 Emergency", style = MaterialTheme.typography.labelMedium) }
+                    )
+                    androidx.compose.material3.Tab(
+                        selected = selectedFilter == com.bitchat.android.model.DisasterPriority.WARNING,
+                        onClick = { selectedFilter = com.bitchat.android.model.DisasterPriority.WARNING },
+                        text = { Text("⚠️ Warning", style = MaterialTheme.typography.labelMedium) }
+                    )
+                    androidx.compose.material3.Tab(
+                        selected = selectedFilter == com.bitchat.android.model.DisasterPriority.GENERAL,
+                        onClick = { selectedFilter = com.bitchat.android.model.DisasterPriority.GENERAL },
+                        text = { Text("ℹ️ All", style = MaterialTheme.typography.labelMedium) }
+                    )
+                }
+
                 // Messages area - takes up available space, will compress when keyboard appears
             MessagesList(
-                messages = displayMessages,
+                messages = filteredMessages,
                 currentUserNickname = nickname,
                 meshService = viewModel.meshService,
                 modifier = Modifier.weight(1f),
@@ -205,6 +267,9 @@ fun ChatScreen(viewModel: ChatViewModel) {
                 messageText = TextFieldValue("")
                 forceScrollToBottom = !forceScrollToBottom // Toggle to trigger scroll
             }
+        },
+        onSendSos = {
+            viewModel.sendSosMessage()
         },
         onSendVoiceNote = { peer, onionOrChannel, path ->
             viewModel.sendVoiceNote(peer, onionOrChannel, path)
@@ -344,6 +409,7 @@ fun ChatInputSection(
     messageText: TextFieldValue,
     onMessageTextChange: (TextFieldValue) -> Unit,
     onSend: () -> Unit,
+    onSendSos: () -> Unit = {},
     onSendVoiceNote: (String?, String?, String) -> Unit,
     onSendImageNote: (String?, String?, String) -> Unit,
     onSendFileNote: (String?, String?, String) -> Unit,
@@ -387,6 +453,7 @@ fun ChatInputSection(
                 value = messageText,
                 onValueChange = onMessageTextChange,
                 onSend = onSend,
+                onSendSos = onSendSos,
                 onSendVoiceNote = onSendVoiceNote,
                 onSendImageNote = onSendImageNote,
                 onSendFileNote = onSendFileNote,
@@ -422,7 +489,7 @@ private fun ChatFloatingHeader(
             .fillMaxWidth()
             .zIndex(1f)
             .windowInsetsPadding(WindowInsets.statusBars), // Extend into status bar area
-        color = colorScheme.surface // WA uses distinct surface for app bar
+        color = colorScheme.background // Solid background color extending into status bar
     ) {
         TopAppBar(
             title = {

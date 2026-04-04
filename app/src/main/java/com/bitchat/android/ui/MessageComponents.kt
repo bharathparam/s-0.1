@@ -221,24 +221,16 @@ fun MessageItem(
                      message.sender.startsWith("$currentUserNickname#")
 
             Surface(
-                shape = if (isSelfMessage) {
-                    androidx.compose.foundation.shape.RoundedCornerShape(
-                        topStart = 16.dp, topEnd = 4.dp, bottomEnd = 16.dp, bottomStart = 16.dp
-                    )
-                } else {
-                    androidx.compose.foundation.shape.RoundedCornerShape(
-                        topStart = 4.dp, topEnd = 16.dp, bottomEnd = 16.dp, bottomStart = 16.dp
-                    )
-                },
-                color = if (isSelfMessage) colorScheme.primaryContainer else colorScheme.surface,
+                shape = MaterialTheme.shapes.large,
+                color = if (isSelfMessage) colorScheme.surfaceVariant else colorScheme.surface,
                 modifier = Modifier
-                    .widthIn(min = 60.dp, max = 320.dp)
+                    .fillMaxWidth(0.9f)
                     .align(if (isSelfMessage) Alignment.TopEnd else Alignment.TopStart)
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
                     horizontalArrangement = Arrangement.Start,
                     verticalAlignment = Alignment.Top
                 ) {
@@ -263,8 +255,8 @@ fun MessageItem(
                 }
             }
 
-            // Delivery status for private messages (overlay, non-displacing)
-            if (message.isPrivate && message.sender == currentUserNickname) {
+            // Delivery status for ALL messages sent by current user
+            if (isSelfMessage) {
                 message.deliveryStatus?.let { status ->
                     Box(
                         modifier = Modifier
@@ -540,8 +532,7 @@ fun MessageItem(
                 )
             },
             style = MaterialTheme.typography.bodyLarge.copy(
-                color = if (isSelf) colorScheme.onPrimaryContainer else colorScheme.onSurface,
-                fontSize = 15.sp
+                color = colorScheme.onSurface
             ),
             softWrap = true,
             overflow = TextOverflow.Visible,
@@ -557,48 +548,46 @@ fun DeliveryStatusIcon(status: DeliveryStatus) {
     when (status) {
         is DeliveryStatus.Sending -> {
             Text(
-                text = stringResource(R.string.status_sending),
-                fontSize = 10.sp,
+                text = "Sending...",
+                fontSize = 11.sp,
                 color = colorScheme.primary.copy(alpha = 0.6f)
             )
         }
         is DeliveryStatus.Sent -> {
-            // Use a subtle hollow marker for Sent; single check is reserved for Delivered (iOS parity)
             Text(
-                text = stringResource(R.string.status_pending),
-                fontSize = 10.sp,
-                color = colorScheme.primary.copy(alpha = 0.6f)
+                text = "Sent",
+                fontSize = 11.sp,
+                color = colorScheme.primary.copy(alpha = 0.8f)
             )
         }
         is DeliveryStatus.Delivered -> {
-            // Single check for Delivered (matches iOS expectations)
             Text(
-                text = stringResource(R.string.status_sent),
-                fontSize = 10.sp,
-                color = colorScheme.primary.copy(alpha = 0.8f)
+                text = "Received",
+                fontSize = 11.sp,
+                color = colorScheme.primary,
+                fontWeight = FontWeight.Bold
             )
         }
         is DeliveryStatus.Read -> {
             Text(
-                text = stringResource(R.string.status_delivered),
-                fontSize = 10.sp,
-                color = MaterialTheme.colorScheme.primary, // Blue
+                text = "Read By All",
+                fontSize = 11.sp,
+                color = colorScheme.primary,
                 fontWeight = FontWeight.Bold
             )
         }
         is DeliveryStatus.Failed -> {
             Text(
-                text = stringResource(R.string.status_failed),
-                fontSize = 10.sp,
+                text = "Failed ⚠",
+                fontSize = 11.sp,
                 color = Color.Red.copy(alpha = 0.8f)
             )
         }
         is DeliveryStatus.PartiallyDelivered -> {
-            // Show a single subdued check without numeric label
             Text(
-                text = stringResource(R.string.status_sent),
-                fontSize = 10.sp,
-                color = colorScheme.primary.copy(alpha = 0.6f)
+                text = "Relayed (${status.reached}/${status.total})",
+                fontSize = 11.sp,
+                color = colorScheme.secondary.copy(alpha = 0.8f)
             )
         }
     }

@@ -988,6 +988,9 @@ fun PrivateChatSheet(
                                 forceScrollToBottom = !forceScrollToBottom
                             }
                         },
+                        onSendSos = {
+                            viewModel.sendSosMessage()
+                        },
                         onSendVoiceNote = { peer, channel, path ->
                             viewModel.sendVoiceNote(peer, channel, path)
                         },
