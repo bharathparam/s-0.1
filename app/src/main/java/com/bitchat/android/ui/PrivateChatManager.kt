@@ -100,15 +100,17 @@ class PrivateChatManager(
             return false
         }
 
-        val message = BitchatMessage(
-            sender = senderNickname ?: myPeerID,
-            content = content,
-            timestamp = Date(),
-            isRelay = false,
-            isPrivate = true,
-            recipientNickname = recipientNickname,
-            senderPeerID = myPeerID,
-            deliveryStatus = DeliveryStatus.Sending
+        val message = com.bitchat.android.disaster.DisasterMessageClassifier.enrich(
+            BitchatMessage(
+                sender = senderNickname ?: myPeerID,
+                content = content,
+                timestamp = Date(),
+                isRelay = false,
+                isPrivate = true,
+                recipientNickname = recipientNickname,
+                senderPeerID = myPeerID,
+                deliveryStatus = DeliveryStatus.Sending
+            )
         )
 
         messageManager.addPrivateMessage(peerID, message)

@@ -65,13 +65,10 @@ class SlashCommandVisualTransformation : VisualTransformation {
                     append(text.text.substring(lastIndex, match.range.first))
                 }
 
-                // Add the styled slash command
                 withStyle(
                     style = SpanStyle(
-                        color = Color(0xFF00FF7F), // Bright green
-                        fontFamily = FontFamily.Monospace,
-                        fontWeight = FontWeight.Medium,
-                        background = Color(0xFF2D2D2D) // Dark gray background
+                        color = Color(0xFFE51025), // Sharp redesign accent
+                        fontWeight = FontWeight.Medium
                     )
                 ) {
                     append(match.value)
@@ -182,24 +179,28 @@ fun MessageInput(
     var elapsedMs by remember { mutableStateOf(0L) }
     var amplitude by remember { mutableStateOf(0) }
 
-    Row(
-        modifier = modifier.padding(horizontal = 12.dp, vertical = 8.dp), // Reduced padding
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    Surface(
+        shape = CircleShape,
+        color = colorScheme.surfaceVariant,
+        modifier = modifier.padding(horizontal = 12.dp, vertical = 8.dp).fillMaxWidth()
     ) {
-        // Text input with placeholder OR visualizer when recording
-        Box(
-            modifier = Modifier.weight(1f)
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Always keep the text field mounted to retain focus and avoid IME collapse
-            BasicTextField(
-                value = value,
-                onValueChange = onValueChange,
-                textStyle = MaterialTheme.typography.bodyMedium.copy(
-                    color = colorScheme.primary,
-                    fontFamily = FontFamily.Monospace
-                ),
-                cursorBrush = SolidColor(if (isRecording) Color.Transparent else colorScheme.primary),
+            // Text input with placeholder OR visualizer when recording
+            Box(
+                modifier = Modifier.weight(1f)
+            ) {
+                // Always keep the text field mounted to retain focus and avoid IME collapse
+                BasicTextField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(
+                        color = colorScheme.onSurface
+                    ),
+                    cursorBrush = SolidColor(if (isRecording) Color.Transparent else colorScheme.onSurface),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                 keyboardActions = KeyboardActions(onSend = { 
                     if (hasText) onSend() // Only send if there's text
@@ -215,17 +216,14 @@ fun MessageInput(
                     }
             )
 
-            // Show placeholder when there's no text and not recording
-            if (value.text.isEmpty() && !isRecording) {
-                Text(
-                    text = stringResource(R.string.type_a_message_placeholder),
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontFamily = FontFamily.Monospace
-                    ),
-                    color = colorScheme.onSurface.copy(alpha = 0.5f), // Muted grey
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
+                if (value.text.isEmpty() && !isRecording) {
+                    Text(
+                        text = stringResource(R.string.type_a_message_placeholder),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = colorScheme.onSurface.copy(alpha = 0.5f), // Muted grey
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
 
             // Overlay the real-time scrolling waveform while recording
             if (isRecording) {
@@ -243,9 +241,8 @@ fun MessageInput(
                     val maxSs = maxSecs % 60
                     Text(
                         text = String.format("%02d:%02d / %02d:%02d", mm, ss, maxMm, maxSs),
-                        fontFamily = FontFamily.Monospace,
-                        color = colorScheme.primary,
-                        fontSize = (BASE_FONT_SIZE - 4).sp
+                        style = MaterialTheme.typography.labelSmall,
+                        color = colorScheme.error
                     )
                 }
             }
@@ -361,7 +358,7 @@ fun MessageInput(
             }
         }
     }
-
+    }
     // Auto-stop handled inside VoiceRecordButton
 }
 

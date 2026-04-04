@@ -13,7 +13,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.repeatOnLifecycle
@@ -44,6 +48,12 @@ import com.bitchat.android.nostr.PoWPreferenceManager
 import com.bitchat.android.services.VerificationService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.filled.Map
+import kotlinx.coroutines.flow.collectLatest
 
 class MainActivity : OrientationAwareActivity() {
 
@@ -304,7 +314,7 @@ class MainActivity : OrientationAwareActivity() {
 
                 // Add the callback - this will be automatically removed when the activity is destroyed
                 onBackPressedDispatcher.addCallback(this, backCallback)
-                ChatScreen(viewModel = chatViewModel)
+                MainScreen(chatViewModel = chatViewModel)
             }
             
             OnboardingState.ERROR -> {
@@ -838,5 +848,64 @@ class MainActivity : OrientationAwareActivity() {
         }
         
         // Do not stop mesh here; ForegroundService owns lifecycle for background reliability
+    }
+}
+
+@Composable
+fun MainScreen(chatViewModel: com.bitchat.android.ui.ChatViewModel) {
+    var selectedTab by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(0) }
+
+    androidx.compose.material3.Scaffold(
+        bottomBar = {
+            androidx.compose.foundation.layout.Box(
+                modifier = androidx.compose.ui.Modifier
+                    .padding(horizontal = 24.dp, vertical = 24.dp)
+                    .fillMaxWidth(),
+                contentAlignment = androidx.compose.ui.Alignment.Center
+            ) {
+                androidx.compose.material3.Surface(
+                    shape = androidx.compose.foundation.shape.CircleShape,
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+                    tonalElevation = 8.dp,
+                    shadowElevation = 8.dp
+                ) {
+                    androidx.compose.foundation.layout.Row(
+                        modifier = androidx.compose.ui.Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceEvenly,
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                    ) {
+                        NavigationBarItem(
+                            selected = selectedTab == 0,
+                            onClick = { selectedTab = 0 },
+                            icon = { androidx.compose.material3.Icon(Icons.Filled.Chat, contentDescription = "Chat") },
+                            label = { androidx.compose.material3.Text("Chat", style = androidx.compose.material3.MaterialTheme.typography.labelSmall) },
+                            colors = androidx.compose.material3.NavigationBarItemDefaults.colors(
+                                indicatorColor = Color.Transparent,
+                                selectedIconColor = androidx.compose.material3.MaterialTheme.colorScheme.error,
+                                unselectedIconColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        )
+                        NavigationBarItem(
+                            selected = selectedTab == 1,
+                            onClick = { selectedTab = 1 },
+                            icon = { androidx.compose.material3.Icon(Icons.Filled.Map, contentDescription = "Map") },
+                            label = { androidx.compose.material3.Text("Map", style = androidx.compose.material3.MaterialTheme.typography.labelSmall) },
+                            colors = androidx.compose.material3.NavigationBarItemDefaults.colors(
+                                indicatorColor = Color.Transparent,
+                                selectedIconColor = androidx.compose.material3.MaterialTheme.colorScheme.error,
+                                unselectedIconColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    ) { innerPadding ->
+        androidx.compose.foundation.layout.Box(modifier = androidx.compose.ui.Modifier.padding(innerPadding)) {
+            when (selectedTab) {
+                0 -> com.bitchat.android.ui.ChatScreen(viewModel = chatViewModel)
+                1 -> com.bitchat.android.mapfeature.MapFeatureScreen()
+            }
+        }
     }
 }

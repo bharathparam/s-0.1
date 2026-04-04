@@ -16,30 +16,34 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 
-// Colors that match the iOS bitchat theme
+// Colors that match Nothing / minimalist aesthetic
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFF39FF14),        // Bright green (terminal-like)
+    primary = Color(0xFFE5E5E5),        // Stark off-white for primary accents
     onPrimary = Color.Black,
-    secondary = Color(0xFF2ECB10),      // Darker green
+    secondary = Color(0xFFFFFFFF),      // Pure white
     onSecondary = Color.Black,
-    background = Color.Black,
-    onBackground = Color(0xFF39FF14),   // Green on black
-    surface = Color(0xFF111111),        // Very dark gray
-    onSurface = Color(0xFF39FF14),      // Green text
-    error = Color(0xFFFF5555),          // Red for errors
-    onError = Color.Black
+    background = Color(0xFF000000),     // True deep OLED Black
+    onBackground = Color(0xFFE5E5E5),   // White on black
+    surface = Color(0xFF141414),        // Very dark gray for components
+    onSurface = Color(0xFFE5E5E5),      // White text
+    surfaceVariant = Color(0xFF1C1C1C), // Slightly lighter elevated background
+    onSurfaceVariant = Color(0xFFAFAFAF), // Gray muted text
+    error = Color(0xFFE51025),          // Nothing Red
+    onError = Color.White
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF008000),        // Dark green
+    primary = Color(0xFF111111),        // Near black
     onPrimary = Color.White,
-    secondary = Color(0xFF006600),      // Even darker green
+    secondary = Color(0xFF000000),      // True black
     onSecondary = Color.White,
-    background = Color.White,
-    onBackground = Color(0xFF008000),   // Dark green on white
-    surface = Color(0xFFF8F8F8),        // Very light gray
-    onSurface = Color(0xFF008000),      // Dark green text
-    error = Color(0xFFCC0000),          // Dark red for errors
+    background = Color(0xFFFFFFFF),     // Pure white
+    onBackground = Color(0xFF111111),   // Black on white
+    surface = Color(0xFFF5F5F5),        // Clean light gray for cards
+    onSurface = Color(0xFF111111),      // Black text
+    surfaceVariant = Color(0xFFEBEBEB), // Slightly darker gray elevation
+    onSurfaceVariant = Color(0xFF555555), // Muted dark text
+    error = Color(0xFFE51025),          // Nothing Red
     onError = Color.White
 )
 
@@ -86,6 +90,7 @@ fun BitchatTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
+        shapes = Shapes,
         content = content
     )
 }

@@ -366,8 +366,6 @@ private fun MainHeader(
                 )
             )
             
-            Spacer(modifier = Modifier.width(2.dp))
-            
             NicknameEditor(
                 value = nickname,
                 onValueChange = onNicknameChange

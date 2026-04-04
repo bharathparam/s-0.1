@@ -62,6 +62,8 @@ roboelectric = "4.15"
 kotlinx-coroutines-test = "1.6"
 
 lifecycle-process = "2.8.7"
+room = "2.6.1"
+osmdroid = "6.1.18"
 
 [libraries]
 # AndroidX Core
@@ -134,11 +136,18 @@ mockito-inline = { module = "org.mockito:mockito-inline", version.ref = "mockito
 roboelectric = { module = "org.robolectric:robolectric", version.ref = "roboelectric"}
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines-test"}
 
+# Map & Database
+osmdroid-android = { module = "org.osmdroid:osmdroid-android", version.ref = "osmdroid" }
+room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
+room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
+room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-parcelize = { id = "kotlin-parcelize" }
+ksp = { id = "com.google.devtools.ksp", version = "2.2.0-1.0.29" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 
 [bundles]
@@ -173,4 +182,4 @@ testing = [
 compose-testing = [
     "androidx-compose-ui-test-junit4",
     "androidx-compose-ui-test-manifest"
-] 
+]

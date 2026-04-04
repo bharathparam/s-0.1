@@ -541,14 +541,16 @@ class ChatViewModel(
                 geohashViewModel.sendGeohashMessage(content, selectedLocationChannel.channel, meshService.myPeerID, state.getNicknameValue())
             } else {
                 // Send public/channel message via mesh
-                val message = BitchatMessage(
-                    sender = state.getNicknameValue() ?: meshService.myPeerID,
-                    content = content,
-                    timestamp = Date(),
-                    isRelay = false,
-                    senderPeerID = meshService.myPeerID,
-                    mentions = if (mentions.isNotEmpty()) mentions else null,
-                    channel = currentChannelValue
+                val message = com.bitchat.android.disaster.DisasterMessageClassifier.enrich(
+                    BitchatMessage(
+                        sender = state.getNicknameValue() ?: meshService.myPeerID,
+                        content = content,
+                        timestamp = Date(),
+                        isRelay = false,
+                        senderPeerID = meshService.myPeerID,
+                        mentions = if (mentions.isNotEmpty()) mentions else null,
+                        channel = currentChannelValue
+                    )
                 )
 
                 if (currentChannelValue != null) {

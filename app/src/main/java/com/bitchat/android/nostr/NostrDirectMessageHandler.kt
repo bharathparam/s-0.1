@@ -121,16 +121,18 @@ class NostrDirectMessageHandler(
                 val existingMessages = state.getPrivateChatsValue()[convKey] ?: emptyList()
                 if (existingMessages.any { it.id == pm.messageID }) return
 
-                val message = BitchatMessage(
-                    id = pm.messageID,
-                    sender = senderNickname,
-                    content = pm.content,
-                    timestamp = timestamp,
-                    isRelay = false,
-                    isPrivate = true,
-                    recipientNickname = state.getNicknameValue(),
-                    senderPeerID = convKey,
-                    deliveryStatus = DeliveryStatus.Delivered(to = state.getNicknameValue() ?: "Unknown", at = Date())
+                val message = com.bitchat.android.disaster.DisasterMessageClassifier.enrich(
+                    BitchatMessage(
+                        id = pm.messageID,
+                        sender = senderNickname,
+                        content = pm.content,
+                        timestamp = timestamp,
+                        isRelay = false,
+                        isPrivate = true,
+                        recipientNickname = state.getNicknameValue(),
+                        senderPeerID = convKey,
+                        deliveryStatus = DeliveryStatus.Delivered(to = state.getNicknameValue() ?: "Unknown", at = Date())
+                    )
                 )
 
                 val isViewing = state.getSelectedPrivateChatPeerValue() == convKey
@@ -170,16 +172,18 @@ class NostrDirectMessageHandler(
                 if (file != null) {
                     val uniqueMsgId = java.util.UUID.randomUUID().toString().uppercase()
                     val savedPath = com.bitchat.android.features.file.FileUtils.saveIncomingFile(application, file)
-                    val message = BitchatMessage(
-                        id = uniqueMsgId,
-                        sender = senderNickname,
-                        content = savedPath,
-                        type = com.bitchat.android.features.file.FileUtils.messageTypeForMime(file.mimeType),
-                        timestamp = timestamp,
-                        isRelay = false,
-                        isPrivate = true,
-                        recipientNickname = state.getNicknameValue(),
-                        senderPeerID = convKey
+                    val message = com.bitchat.android.disaster.DisasterMessageClassifier.enrich(
+                        BitchatMessage(
+                            id = uniqueMsgId,
+                            sender = senderNickname,
+                            content = savedPath,
+                            type = com.bitchat.android.features.file.FileUtils.messageTypeForMime(file.mimeType),
+                            timestamp = timestamp,
+                            isRelay = false,
+                            isPrivate = true,
+                            recipientNickname = state.getNicknameValue(),
+                            senderPeerID = convKey
+                        )
                     )
                     Log.d(TAG, "📄 Saved Nostr encrypted incoming file to $savedPath (msgId=$uniqueMsgId)")
                     withContext(Dispatchers.Main) {

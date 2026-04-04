@@ -186,16 +186,18 @@ class MediaSendingManager(
 
         Log.d(TAG, "📤 FILE_TRANSFER send (private): name='${filePacket.fileName}', size=${filePacket.fileSize}, mime='${filePacket.mimeType}', sha256=$contentHash, to=${toPeerID.take(8)} transferId=${transferId.take(16)}…")
 
-        val msg = BitchatMessage(
-            id = java.util.UUID.randomUUID().toString().uppercase(), // Generate unique ID for each message
-            sender = state.getNicknameValue() ?: "me",
-            content = filePath,
-            type = messageType,
-            timestamp = Date(),
-            isRelay = false,
-            isPrivate = true,
-            recipientNickname = try { meshService.getPeerNicknames()[toPeerID] } catch (_: Exception) { null },
-            senderPeerID = meshService.myPeerID
+        val msg = com.bitchat.android.disaster.DisasterMessageClassifier.enrich(
+            BitchatMessage(
+                id = java.util.UUID.randomUUID().toString().uppercase(), // Generate unique ID for each message
+                sender = state.getNicknameValue() ?: "me",
+                content = filePath,
+                type = messageType,
+                timestamp = Date(),
+                isRelay = false,
+                isPrivate = true,
+                recipientNickname = try { meshService.getPeerNicknames()[toPeerID] } catch (_: Exception) { null },
+                senderPeerID = meshService.myPeerID
+            )
         )
         
         messageManager.addPrivateMessage(toPeerID, msg)
@@ -237,15 +239,17 @@ class MediaSendingManager(
         
         Log.d(TAG, "📤 FILE_TRANSFER send (broadcast): name='${filePacket.fileName}', size=${filePacket.fileSize}, mime='${filePacket.mimeType}', sha256=$contentHash, transferId=${transferId.take(16)}…")
 
-        val message = BitchatMessage(
-            id = java.util.UUID.randomUUID().toString().uppercase(), // Generate unique ID for each message
-            sender = state.getNicknameValue() ?: meshService.myPeerID,
-            content = filePath,
-            type = messageType,
-            timestamp = Date(),
-            isRelay = false,
-            senderPeerID = meshService.myPeerID,
-            channel = channelOrNull
+        val message = com.bitchat.android.disaster.DisasterMessageClassifier.enrich(
+            BitchatMessage(
+                id = java.util.UUID.randomUUID().toString().uppercase(), // Generate unique ID for each message
+                sender = state.getNicknameValue() ?: meshService.myPeerID,
+                content = filePath,
+                type = messageType,
+                timestamp = Date(),
+                isRelay = false,
+                senderPeerID = meshService.myPeerID,
+                channel = channelOrNull
+            )
         )
         
         if (!channelOrNull.isNullOrBlank()) {

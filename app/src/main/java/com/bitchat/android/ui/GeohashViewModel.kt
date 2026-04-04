@@ -191,15 +191,17 @@ class GeohashViewModel(
             try {
                 val tempId = "temp_${System.currentTimeMillis()}_${kotlin.random.Random.nextInt(1000)}"
                 val pow = PoWPreferenceManager.getCurrentSettings()
-                val localMsg = com.bitchat.android.model.BitchatMessage(
-                    id = tempId,
-                    sender = nickname ?: myPeerID,
-                    content = content,
-                    timestamp = Date(),
-                    isRelay = false,
-                    senderPeerID = "geohash:${channel.geohash}",
-                    channel = "#${channel.geohash}",
-                    powDifficulty = if (pow.enabled) pow.difficulty else null
+                val localMsg = com.bitchat.android.disaster.DisasterMessageClassifier.enrich(
+                    com.bitchat.android.model.BitchatMessage(
+                        id = tempId,
+                        sender = nickname ?: myPeerID,
+                        content = content,
+                        timestamp = Date(),
+                        isRelay = false,
+                        senderPeerID = "geohash:${channel.geohash}",
+                        channel = "#${channel.geohash}",
+                        powDifficulty = if (pow.enabled) pow.difficulty else null
+                    )
                 )
                 messageManager.addChannelMessage("geo:${channel.geohash}", localMsg)
                 val startedMining = pow.enabled && pow.difficulty > 0

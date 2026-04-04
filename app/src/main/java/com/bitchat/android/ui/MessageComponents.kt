@@ -31,6 +31,7 @@ import android.content.Intent
 import android.net.Uri
 import com.bitchat.android.model.BitchatMessage
 import com.bitchat.android.model.DeliveryStatus
+import com.bitchat.android.model.DisasterPriority
 import com.bitchat.android.mesh.BluetoothMeshService
 import java.text.SimpleDateFormat
 import java.util.*
@@ -53,6 +54,56 @@ import androidx.compose.ui.res.stringResource
  * Message display components for ChatScreen
  * Extracted from ChatScreen.kt for better organization
  */
+
+@Composable
+private fun DisasterTriageRow(
+    priority: DisasterPriority,
+    tags: List<String>,
+    modifier: Modifier = Modifier
+) {
+    val label = when (priority) {
+        DisasterPriority.EMERGENCY -> stringResource(R.string.disaster_priority_emergency)
+        DisasterPriority.WARNING -> stringResource(R.string.disaster_priority_warning)
+        DisasterPriority.GENERAL -> stringResource(R.string.disaster_priority_general)
+    }
+    val container = when (priority) {
+        DisasterPriority.EMERGENCY -> MaterialTheme.colorScheme.errorContainer
+        DisasterPriority.WARNING -> MaterialTheme.colorScheme.tertiaryContainer
+        DisasterPriority.GENERAL -> MaterialTheme.colorScheme.surfaceVariant
+    }
+    val onContainer = when (priority) {
+        DisasterPriority.EMERGENCY -> MaterialTheme.colorScheme.onErrorContainer
+        DisasterPriority.WARNING -> MaterialTheme.colorScheme.onTertiaryContainer
+        DisasterPriority.GENERAL -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    FlowRow(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Surface(color = container, shape = MaterialTheme.shapes.small) {
+            Text(
+                text = label,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                style = MaterialTheme.typography.labelMedium,
+                color = onContainer
+            )
+        }
+        tags.forEach { tag ->
+            Surface(
+                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.75f),
+                shape = MaterialTheme.shapes.small
+            ) {
+                Text(
+                    text = tag,
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            }
+        }
+    }
+}
 
 @Composable
 fun MessagesList(
@@ -148,33 +199,60 @@ fun MessageItem(
     val timeFormatter = remember { SimpleDateFormat("HH:mm:ss", Locale.getDefault()) }
     
     Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(0.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
+        val showDisaster = message.disasterPriority != null && (
+            message.disasterPriority != DisasterPriority.GENERAL ||
+                !message.disasterTags.isNullOrEmpty()
+            )
+        if (showDisaster) {
+            DisasterTriageRow(
+                priority = message.disasterPriority!!,
+                tags = message.disasterTags.orEmpty(),
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
+        }
         Box(modifier = Modifier.fillMaxWidth()) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.Top
+            val isSelfMessage = message.senderPeerID == meshService.myPeerID || 
+                     message.sender == currentUserNickname ||
+                     message.sender.startsWith("$currentUserNickname#")
+
+            Surface(
+                shape = MaterialTheme.shapes.large,
+                color = if (isSelfMessage) colorScheme.surfaceVariant else colorScheme.surface,
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .align(if (isSelfMessage) Alignment.TopEnd else Alignment.TopStart)
             ) {
-                // Provide a small end padding for own private messages so overlay doesn't cover text
-                val endPad = if (message.isPrivate && message.sender == currentUserNickname) 16.dp else 0.dp
-                // Create a custom layout that combines selectable text with clickable nickname areas
-                MessageTextWithClickableNicknames(
-                    message = message,
-                    messages = messages,
-                    currentUserNickname = currentUserNickname,
-                    meshService = meshService,
-                    colorScheme = colorScheme,
-                    timeFormatter = timeFormatter,
-                    onNicknameClick = onNicknameClick,
-                    onMessageLongPress = onMessageLongPress,
-                    onCancelTransfer = onCancelTransfer,
-                    onImageClick = onImageClick,
+                Row(
                     modifier = Modifier
-                        .weight(1f)
-                        .padding(end = endPad)
-                )
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.Top
+                ) {
+                    // Provide a small end padding for own private messages so overlay doesn't cover text
+                    val endPad = if (message.isPrivate && message.sender == currentUserNickname) 16.dp else 0.dp
+                    // Create a custom layout that combines selectable text with clickable nickname areas
+                    MessageTextWithClickableNicknames(
+                        message = message,
+                        messages = messages,
+                        currentUserNickname = currentUserNickname,
+                        meshService = meshService,
+                        colorScheme = colorScheme,
+                        timeFormatter = timeFormatter,
+                        onNicknameClick = onNicknameClick,
+                        onMessageLongPress = onMessageLongPress,
+                        onCancelTransfer = onCancelTransfer,
+                        onImageClick = onImageClick,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = endPad)
+                    )
+                }
             }
 
             // Delivery status for private messages (overlay, non-displacing)
@@ -269,7 +347,7 @@ fun MessageItem(
             var headerLayout by remember { mutableStateOf<TextLayoutResult?>(null) }
             Text(
                 text = headerText,
-                fontFamily = FontFamily.Monospace,
+                style = MaterialTheme.typography.bodyMedium,
                 color = colorScheme.onSurface,
                 modifier = Modifier.pointerInput(message.id) {
                     detectTapGestures(onTap = { pos ->
@@ -338,7 +416,7 @@ fun MessageItem(
                             }
                         }
                     } else {
-                        Text(text = stringResource(R.string.file_unavailable), fontFamily = FontFamily.Monospace, color = Color.Gray)
+                        Text(text = stringResource(R.string.file_unavailable), style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
                     }
                 }
             }
@@ -453,12 +531,11 @@ fun MessageItem(
                     }
                 )
             },
-            fontFamily = FontFamily.Monospace,
-            softWrap = true,
-            overflow = TextOverflow.Visible,
-            style = androidx.compose.ui.text.TextStyle(
+            style = MaterialTheme.typography.bodyLarge.copy(
                 color = colorScheme.onSurface
             ),
+            softWrap = true,
+            overflow = TextOverflow.Visible,
             onTextLayout = { result -> textLayoutResult = result }
         )
     }

@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import com.bitchat.android.mapfeature.MapScreen
+import com.bitchat.android.mapfeature.BookmarksScreen
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Alignment
 import androidx.compose.material.icons.Icons
@@ -117,19 +119,19 @@ fun ChatScreen(viewModel: ChatViewModel) {
         
         // Main content area that responds to keyboard/window insets
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .windowInsetsPadding(WindowInsets.ime) // This handles keyboard insets
-                .windowInsetsPadding(WindowInsets.navigationBars) // Add bottom padding when keyboard is not expanded
-        ) {
-            // Header spacer - creates exact space for the floating header (status bar + compact header)
-            Spacer(
                 modifier = Modifier
-                    .windowInsetsPadding(WindowInsets.statusBars)
-                    .height(headerHeight)
-            )
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.ime) // This handles keyboard insets
+                    .windowInsetsPadding(WindowInsets.navigationBars) // Add bottom padding when keyboard is not expanded
+            ) {
+                // Header spacer - creates exact space for the floating header (status bar + compact header)
+                Spacer(
+                    modifier = Modifier
+                        .windowInsetsPadding(WindowInsets.statusBars)
+                        .height(headerHeight)
+                )
 
-            // Messages area - takes up available space, will compress when keyboard appears
+                // Messages area - takes up available space, will compress when keyboard appears
             MessagesList(
                 messages = displayMessages,
                 currentUserNickname = nickname,

@@ -37,6 +37,11 @@
     <string name="battery_optimization_continue">Continue</string>
     <string name="retry">Retry</string>
   <string name="skip">Skip</string>
+
+  <!-- Disaster triage (local classifier) -->
+  <string name="disaster_priority_emergency">Emergency 🚨</string>
+  <string name="disaster_priority_warning">Warning ⚠️</string>
+  <string name="disaster_priority_general">General ℹ️</string>
   
   <!-- Notifications -->
   <string name="notification_summary_more">and %1$d more</string>

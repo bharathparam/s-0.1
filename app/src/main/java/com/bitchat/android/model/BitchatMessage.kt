@@ -69,7 +69,10 @@ data class BitchatMessage(
     val encryptedContent: ByteArray? = null,
     val isEncrypted: Boolean = false,
     val deliveryStatus: DeliveryStatus? = null,
-    val powDifficulty: Int? = null
+    val powDifficulty: Int? = null,
+    /** Local disaster triage (offline heuristic); not sent on wire. */
+    val disasterPriority: DisasterPriority? = null,
+    val disasterTags: List<String>? = null
 ) : Parcelable {
 
     /**
@@ -331,6 +334,8 @@ data class BitchatMessage(
         } else if (other.encryptedContent != null) return false
         if (isEncrypted != other.isEncrypted) return false
         if (deliveryStatus != other.deliveryStatus) return false
+        if (disasterPriority != other.disasterPriority) return false
+        if (disasterTags != other.disasterTags) return false
 
         return true
     }
@@ -351,6 +356,8 @@ data class BitchatMessage(
         result = 31 * result + (encryptedContent?.contentHashCode() ?: 0)
         result = 31 * result + isEncrypted.hashCode()
         result = 31 * result + (deliveryStatus?.hashCode() ?: 0)
+        result = 31 * result + (disasterPriority?.hashCode() ?: 0)
+        result = 31 * result + (disasterTags?.hashCode() ?: 0)
         return result
     }
 }

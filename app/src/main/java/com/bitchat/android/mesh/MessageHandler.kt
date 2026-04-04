@@ -1,6 +1,7 @@
 package com.bitchat.android.mesh
 
 import android.util.Log
+import com.bitchat.android.disaster.DisasterMessageClassifier
 import com.bitchat.android.ledger.LedgerBlobNames
 import com.bitchat.android.ledger.LedgerRecordPayload
 import com.bitchat.android.ledger.LedgerRepository
@@ -93,17 +94,19 @@ class MessageHandler(private val myPeerID: String, private val appContext: andro
                         }
                         
                         // Create BitchatMessage - preserve source packet timestamp
-                        val message = BitchatMessage(
-                            id = privateMessage.messageID,
-                            sender = delegate?.getPeerNickname(peerID) ?: "Unknown",
-                            content = privateMessage.content,
-                            timestamp = java.util.Date(packet.timestamp.toLong()),
-                            isRelay = false,
-                            originalSender = null,
-                            isPrivate = true,
-                            recipientNickname = delegate?.getMyNickname(),
-                            senderPeerID = peerID,
-                            mentions = null // TODO: Parse mentions if needed
+                        val message = DisasterMessageClassifier.enrich(
+                            BitchatMessage(
+                                id = privateMessage.messageID,
+                                sender = delegate?.getPeerNickname(peerID) ?: "Unknown",
+                                content = privateMessage.content,
+                                timestamp = java.util.Date(packet.timestamp.toLong()),
+                                isRelay = false,
+                                originalSender = null,
+                                isPrivate = true,
+                                recipientNickname = delegate?.getMyNickname(),
+                                senderPeerID = peerID,
+                                mentions = null // TODO: Parse mentions if needed
+                            )
                         )
                         
                         // Notify delegate
@@ -121,16 +124,18 @@ class MessageHandler(private val myPeerID: String, private val appContext: andro
                         Log.d(TAG, "🔓 Decrypted encrypted file from $peerID: name='${file.fileName}', size=${file.fileSize}, mime='${file.mimeType}'")
                         val uniqueMsgId = java.util.UUID.randomUUID().toString().uppercase()
                         val savedPath = com.bitchat.android.features.file.FileUtils.saveIncomingFile(appContext, file)
-                        val message = BitchatMessage(
-                            id = uniqueMsgId,
-                            sender = delegate?.getPeerNickname(peerID) ?: "Unknown",
-                            content = savedPath,
-                            type = com.bitchat.android.features.file.FileUtils.messageTypeForMime(file.mimeType),
-                            timestamp = java.util.Date(packet.timestamp.toLong()),
-                            isRelay = false,
-                            isPrivate = true,
-                            recipientNickname = delegate?.getMyNickname(),
-                            senderPeerID = peerID
+                        val message = DisasterMessageClassifier.enrich(
+                            BitchatMessage(
+                                id = uniqueMsgId,
+                                sender = delegate?.getPeerNickname(peerID) ?: "Unknown",
+                                content = savedPath,
+                                type = com.bitchat.android.features.file.FileUtils.messageTypeForMime(file.mimeType),
+                                timestamp = java.util.Date(packet.timestamp.toLong()),
+                                isRelay = false,
+                                isPrivate = true,
+                                recipientNickname = delegate?.getMyNickname(),
+                                senderPeerID = peerID
+                            )
                         )
 
                         Log.d(TAG, "📄 Saved encrypted incoming file to $savedPath (msgId=$uniqueMsgId)")
@@ -469,13 +474,15 @@ class MessageHandler(private val myPeerID: String, private val appContext: andro
                     Log.d(TAG, "📥 FILE_TRANSFER decode success (broadcast): name='${file.fileName}', size=${file.fileSize}, mime='${file.mimeType}', from=${peerID.take(8)}")
                 }
                 val savedPath = com.bitchat.android.features.file.FileUtils.saveIncomingFile(appContext, file)
-                val message = BitchatMessage(
-                    id = java.util.UUID.randomUUID().toString().uppercase(),
-                    sender = delegate?.getPeerNickname(peerID) ?: "unknown",
-                    content = savedPath,
-                    type = com.bitchat.android.features.file.FileUtils.messageTypeForMime(file.mimeType),
-                    senderPeerID = peerID,
-                    timestamp = Date(packet.timestamp.toLong())
+                val message = DisasterMessageClassifier.enrich(
+                    BitchatMessage(
+                        id = java.util.UUID.randomUUID().toString().uppercase(),
+                        sender = delegate?.getPeerNickname(peerID) ?: "unknown",
+                        content = savedPath,
+                        type = com.bitchat.android.features.file.FileUtils.messageTypeForMime(file.mimeType),
+                        senderPeerID = peerID,
+                        timestamp = Date(packet.timestamp.toLong())
+                    )
                 )
                 Log.d(TAG, "📄 Saved incoming file to $savedPath")
                 delegate?.onMessageReceived(message)
@@ -485,11 +492,13 @@ class MessageHandler(private val myPeerID: String, private val appContext: andro
             }
 
             // Fallback: plain text
-            val message = BitchatMessage(
-                sender = delegate?.getPeerNickname(peerID) ?: "unknown",
-                content = String(packet.payload, Charsets.UTF_8),
-                senderPeerID = peerID,
-                timestamp = Date(packet.timestamp.toLong())
+            val message = DisasterMessageClassifier.enrich(
+                BitchatMessage(
+                    sender = delegate?.getPeerNickname(peerID) ?: "unknown",
+                    content = String(packet.payload, Charsets.UTF_8),
+                    senderPeerID = peerID,
+                    timestamp = Date(packet.timestamp.toLong())
+                )
             )
             delegate?.onMessageReceived(message)
         } catch (e: Exception) {
@@ -516,15 +525,17 @@ class MessageHandler(private val myPeerID: String, private val appContext: andro
                     Log.d(TAG, "📥 FILE_TRANSFER decode success (private): name='${file.fileName}', size=${file.fileSize}, mime='${file.mimeType}', from=${peerID.take(8)}")
                 }
                 val savedPath = com.bitchat.android.features.file.FileUtils.saveIncomingFile(appContext, file)
-                val message = BitchatMessage(
-                    id = java.util.UUID.randomUUID().toString().uppercase(),
-                    sender = delegate?.getPeerNickname(peerID) ?: "unknown",
-                    content = savedPath,
-                    type = com.bitchat.android.features.file.FileUtils.messageTypeForMime(file.mimeType),
-                    senderPeerID = peerID,
-                    timestamp = Date(packet.timestamp.toLong()),
-                    isPrivate = true,
-                    recipientNickname = delegate?.getMyNickname()
+                val message = DisasterMessageClassifier.enrich(
+                    BitchatMessage(
+                        id = java.util.UUID.randomUUID().toString().uppercase(),
+                        sender = delegate?.getPeerNickname(peerID) ?: "unknown",
+                        content = savedPath,
+                        type = com.bitchat.android.features.file.FileUtils.messageTypeForMime(file.mimeType),
+                        senderPeerID = peerID,
+                        timestamp = Date(packet.timestamp.toLong()),
+                        isPrivate = true,
+                        recipientNickname = delegate?.getMyNickname()
+                    )
                 )
                 Log.d(TAG, "📄 Saved incoming file to $savedPath")
                 delegate?.onMessageReceived(message)
@@ -534,11 +545,15 @@ class MessageHandler(private val myPeerID: String, private val appContext: andro
             }
 
             // Fallback: plain text
-            val message = BitchatMessage(
-                sender = delegate?.getPeerNickname(peerID) ?: "unknown",
-                content = String(packet.payload, Charsets.UTF_8),
-                senderPeerID = peerID,
-                timestamp = Date(packet.timestamp.toLong())
+            val message = DisasterMessageClassifier.enrich(
+                BitchatMessage(
+                    sender = delegate?.getPeerNickname(peerID) ?: "unknown",
+                    content = String(packet.payload, Charsets.UTF_8),
+                    senderPeerID = peerID,
+                    timestamp = Date(packet.timestamp.toLong()),
+                    isPrivate = true,
+                    recipientNickname = delegate?.getMyNickname()
+                )
             )
             delegate?.onMessageReceived(message)
 
