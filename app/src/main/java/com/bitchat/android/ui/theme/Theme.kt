@@ -16,35 +16,67 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 
-// Colors that match Nothing / minimalist aesthetic
+// ─── Dark Palette ────────────────────────────────────────────────────
+// True OLED blacks layered with warm carbon grays.
+// Primary = pure white for maximum contrast. Tertiary = accent red.
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFFE5E5E5),        // Stark off-white for primary accents
-    onPrimary = Color.Black,
-    secondary = Color(0xFFFFFFFF),      // Pure white
-    onSecondary = Color.Black,
-    background = Color(0xFF000000),     // True deep OLED Black
-    onBackground = Color(0xFFE5E5E5),   // White on black
-    surface = Color(0xFF141414),        // Very dark gray for components
-    onSurface = Color(0xFFE5E5E5),      // White text
-    surfaceVariant = Color(0xFF1C1C1C), // Slightly lighter elevated background
-    onSurfaceVariant = Color(0xFFAFAFAF), // Gray muted text
-    error = Color(0xFFE51025),          // Nothing Red
-    onError = Color.White
+    primary = Color(0xFFFFFFFF),
+    onPrimary = Color(0xFF0A0A0A),
+    primaryContainer = Color(0xFF1E1E1E),
+    onPrimaryContainer = Color(0xFFE0E0E0),
+    secondary = Color(0xFFB0B0B0),
+    onSecondary = Color(0xFF0A0A0A),
+    secondaryContainer = Color(0xFF2A2A2A),
+    onSecondaryContainer = Color(0xFFD0D0D0),
+    tertiary = Color(0xFFD93025),            // Accent red – sparingly
+    onTertiary = Color.White,
+    tertiaryContainer = Color(0xFF3D0E0A),
+    onTertiaryContainer = Color(0xFFFFDAD6),
+    background = Color(0xFF000000),          // True OLED Black
+    onBackground = Color(0xFFEAEAEA),
+    surface = Color(0xFF0E0E0E),             // Level 1 – cards
+    onSurface = Color(0xFFEAEAEA),
+    surfaceVariant = Color(0xFF1A1A1A),      // Level 2 – elevated
+    onSurfaceVariant = Color(0xFF9E9E9E),
+    surfaceTint = Color.Transparent,
+    outline = Color(0xFF3A3A3A),
+    outlineVariant = Color(0xFF252525),
+    error = Color(0xFFD93025),
+    onError = Color.White,
+    inverseSurface = Color(0xFFE4E4E4),
+    inverseOnSurface = Color(0xFF1A1A1A),
+    inversePrimary = Color(0xFF1A1A1A)
 )
 
+// ─── Light Palette ───────────────────────────────────────────────────
+// Paper white with warm neutral grays: editorial, airy, museum-like.
 private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF111111),        // Near black
+    primary = Color(0xFF0A0A0A),
     onPrimary = Color.White,
-    secondary = Color(0xFF000000),      // True black
+    primaryContainer = Color(0xFFF0F0F0),
+    onPrimaryContainer = Color(0xFF1A1A1A),
+    secondary = Color(0xFF666666),
     onSecondary = Color.White,
-    background = Color(0xFFFFFFFF),     // Pure white
-    onBackground = Color(0xFF111111),   // Black on white
-    surface = Color(0xFFF5F5F5),        // Clean light gray for cards
-    onSurface = Color(0xFF111111),      // Black text
-    surfaceVariant = Color(0xFFEBEBEB), // Slightly darker gray elevation
-    onSurfaceVariant = Color(0xFF555555), // Muted dark text
-    error = Color(0xFFE51025),          // Nothing Red
-    onError = Color.White
+    secondaryContainer = Color(0xFFE8E8E8),
+    onSecondaryContainer = Color(0xFF333333),
+    tertiary = Color(0xFFD93025),
+    onTertiary = Color.White,
+    tertiaryContainer = Color(0xFFFFEDE9),
+    onTertiaryContainer = Color(0xFF3D0E0A),
+    background = Color(0xFFFAFAFA),
+    onBackground = Color(0xFF0E0E0E),
+    surface = Color(0xFFFFFFFF),
+    onSurface = Color(0xFF0E0E0E),
+    surfaceVariant = Color(0xFFF2F2F2),
+    onSurfaceVariant = Color(0xFF666666),
+    surfaceTint = Color.Transparent,
+    outline = Color(0xFFDEDEDE),
+    outlineVariant = Color(0xFFEEEEEE),
+    error = Color(0xFFD93025),
+    onError = Color.White,
+    inverseSurface = Color(0xFF1A1A1A),
+    inverseOnSurface = Color(0xFFE4E4E4),
+    inversePrimary = Color(0xFFE4E4E4)
 )
 
 @Composable
@@ -80,6 +112,7 @@ fun BitchatTheme(
                     View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
                 } else 0
             }
+            @Suppress("DEPRECATION")
             window.navigationBarColor = colorScheme.background.toArgb()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 window.isNavigationBarContrastEnforced = false

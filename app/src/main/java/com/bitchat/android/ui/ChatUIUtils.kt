@@ -27,11 +27,11 @@ import java.util.*
  */
 fun getRSSIColor(rssi: Int): Color {
     return when {
-        rssi >= -50 -> Color(0xFF00FF00) // Bright green
-        rssi >= -60 -> Color(0xFF80FF00) // Green-yellow
-        rssi >= -70 -> Color(0xFFFFFF00) // Yellow
-        rssi >= -80 -> Color(0xFFFF8000) // Orange
-        else -> Color(0xFFFF4444) // Red
+        rssi >= -50 -> Color(0xFF81C784) // Soft green
+        rssi >= -60 -> Color(0xFFAED581) // Light green
+        rssi >= -70 -> Color(0xFFFFD54F) // Warm amber
+        rssi >= -80 -> Color(0xFFFFB74D) // Soft orange
+        else -> Color(0xFFE57373)         // Muted red
     }
 }
 
@@ -57,7 +57,7 @@ fun formatMessageAsAnnotatedString(
     if (message.sender != "system") {
         // Get base color for this peer (iOS-style color assignment)
         val baseColor = if (isSelf) {
-            Color(0xFFFF9500) // Orange for self (iOS orange)
+            Color(0xFFBDBDBD) // Neutral silver for self (legible on both black/white surfaces)
         } else {
             getPeerColor(message, isDark)
         }
@@ -174,7 +174,7 @@ fun formatMessageHeaderAnnotatedString(
             message.sender.startsWith("$currentUserNickname#")
 
     if (message.sender != "system") {
-        val baseColor = if (isSelf) Color(0xFFFF9500) else getPeerColor(message, isDark)
+        val baseColor = if (isSelf) Color(0xFFBDBDBD) else getPeerColor(message, isDark)
         val (baseName, suffix) = splitSuffix(message.sender)
 
         // "<@"
@@ -442,7 +442,7 @@ private fun appendIOSFormattedContent(
                 
                 // Check if this mention targets current user
                 val isMentionToMe = mBase == currentUserNickname
-                val mentionColor = if (isMentionToMe) Color(0xFFFF9500) else baseColor
+                val mentionColor = if (isMentionToMe) Color(0xFFD93025) else baseColor  // Accent red for self-mentions
                 
                 // "@" symbol
                 builder.pushStyle(SpanStyle(
@@ -493,7 +493,7 @@ private fun appendIOSFormattedContent(
                 if (type == "geohash") {
                     // Style geohash in blue, underlined, and add click annotation
                     builder.pushStyle(SpanStyle(
-                        color = Color(0xFF007AFF),
+                        color = Color(0xFF7CB7FF),  // Soft pastel blue for links
                         fontSize = BASE_FONT_SIZE.sp,
                         fontWeight = if (isSelf) FontWeight.Bold else FontWeight.SemiBold,
                         textDecoration = TextDecoration.Underline
@@ -512,7 +512,7 @@ private fun appendIOSFormattedContent(
                 } else if (type == "url") {
                     // Style URL in blue, underlined, and add click annotation with the raw text
                     builder.pushStyle(SpanStyle(
-                        color = Color(0xFF007AFF),
+                        color = Color(0xFF7CB7FF),  // Soft pastel blue for links
                         fontSize = BASE_FONT_SIZE.sp,
                         fontWeight = if (isSelf) FontWeight.Bold else FontWeight.SemiBold,
                         textDecoration = TextDecoration.Underline

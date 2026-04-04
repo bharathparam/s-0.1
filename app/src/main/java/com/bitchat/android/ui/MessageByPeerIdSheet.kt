@@ -118,7 +118,7 @@ fun MessageByPeerIdSheet(
                 minLines = 2,
                 isError = errorText != null,
                 supportingText = errorText?.let { msg -> { Text(msg) } },
-                textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                textStyle = MaterialTheme.typography.bodyMedium.copy(),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { trySubmit() })
             )

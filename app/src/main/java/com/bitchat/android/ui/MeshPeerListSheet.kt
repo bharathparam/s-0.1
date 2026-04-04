@@ -335,7 +335,7 @@ private fun ChannelRow(
                 Text(
                     text = channel,
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        fontFamily = FontFamily.Monospace,
+                        
                         fontSize = BASE_FONT_SIZE.sp
                     ),
                     color = if (isSelected) colorScheme.primary else colorScheme.onSurface,
@@ -386,7 +386,7 @@ fun PeopleSection(
             Text(
                 text = stringResource(id = R.string.no_one_connected),
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    fontFamily = FontFamily.Monospace,
+                    
                     fontSize = 12.sp
                 ),
                 color = colorScheme.onSurface.copy(alpha = 0.5f),
@@ -654,7 +654,7 @@ private fun PeerItem(
     // Get consistent peer color (iOS-compatible)
     val isDark = colorScheme.background.red + colorScheme.background.green + colorScheme.background.blue < 1.5f
     val assignedColor = viewModel.colorForMeshPeer(peerID, isDark)
-    val baseColor = if (isMe) Color(0xFFFF9500) else assignedColor
+    val baseColor = if (isMe) MaterialTheme.colorScheme.tertiary else assignedColor
 
     Surface(
         onClick = onItemClick,
@@ -687,7 +687,7 @@ private fun PeerItem(
                         imageVector = Icons.Filled.Email,
                         contentDescription = stringResource(R.string.cd_unread_message),
                         modifier = Modifier.size(16.dp),
-                        tint = Color(0xFFFF9500) // iOS orange
+                        tint = MaterialTheme.colorScheme.tertiary // iOS orange
                     )
                 } else if (showNostrGlobe) {
                     // Purple globe to indicate Nostr availability
@@ -720,7 +720,7 @@ private fun PeerItem(
                     Text(
                         text = baseName,
                         style = MaterialTheme.typography.bodyMedium.copy(
-                            fontFamily = FontFamily.Monospace,
+                            
                             fontSize = BASE_FONT_SIZE.sp,
                             fontWeight = if (isMe) FontWeight.Bold else FontWeight.Normal
                         ),
@@ -734,7 +734,7 @@ private fun PeerItem(
                         Text(
                             text = suffix,
                             style = MaterialTheme.typography.bodyMedium.copy(
-                                fontFamily = FontFamily.Monospace,
+                                
                                 fontSize = BASE_FONT_SIZE.sp
                             ),
                             color = baseColor.copy(alpha = 0.6f)
@@ -799,7 +799,7 @@ private fun UnreadBadge(
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.Monospace
+                    
                 ),
                 color = Color.Black // Black text on yellow background
             )
@@ -926,7 +926,7 @@ fun PrivateChatSheet(
                                 Icon(
                                     imageVector = Icons.Outlined.Lock,
                                     contentDescription = null,
-                                    tint = Color(0xFFFF9500),
+                                    tint = MaterialTheme.colorScheme.tertiary,
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Column {
@@ -1068,9 +1068,9 @@ fun PrivateChatSheet(
                             text = titleText,
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                fontFamily = FontFamily.Monospace
+                                
                             ),
-                            color = if (isNostrPeer) Color(0xFFFF9500) else colorScheme.onSurface
+                            color = if (isNostrPeer) MaterialTheme.colorScheme.tertiary else colorScheme.onSurface
                         )
 
                             Row(

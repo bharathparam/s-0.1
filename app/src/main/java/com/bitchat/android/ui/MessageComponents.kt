@@ -573,7 +573,7 @@ fun DeliveryStatusIcon(status: DeliveryStatus) {
             Text(
                 text = stringResource(R.string.status_delivered),
                 fontSize = 10.sp,
-                color = Color(0xFF007AFF), // Blue
+                color = MaterialTheme.colorScheme.primary, // Blue
                 fontWeight = FontWeight.Bold
             )
         }

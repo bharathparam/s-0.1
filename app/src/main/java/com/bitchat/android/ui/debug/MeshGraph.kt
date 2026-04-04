@@ -217,6 +217,8 @@ fun ForceDirectedMeshGraph(
     val density = LocalDensity.current
     val simulation = remember { Simulation() }
     val colorScheme = MaterialTheme.colorScheme
+    val nodeColor = colorScheme.primary
+    val nodeFillColor = colorScheme.tertiary
     
     // Listen for visual events
     val debugManager = remember { DebugSettingsManager.getInstance() }
@@ -378,14 +380,14 @@ fun ForceDirectedMeshGraph(
                 // Pulse glow
                 if (pulse > 0.05f) {
                      drawCircle(
-                        color = Color(0xFF00FF00).copy(alpha = pulse * 0.6f),
+                        color = nodeColor.copy(alpha = pulse * 0.6f),
                         radius = 16f + (pulse * 20f),
                         center = center
                     )
                 }
 
                 drawCircle(
-                    color = Color(0xFF00C851),
+                    color = nodeFillColor,
                     radius = 16f + (pulse * 4f), // Slight scale up
                     center = center
                 )

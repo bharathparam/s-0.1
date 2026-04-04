@@ -109,8 +109,8 @@ class MentionVisualTransformation : VisualTransformation {
                 // Add the styled mention
                 withStyle(
                     style = SpanStyle(
-                        color = Color(0xFFFF9500), // Orange
-                        fontFamily = FontFamily.Monospace,
+                        color = Color(0xFFD93025), // Accent red for mentions
+                        
                         fontWeight = FontWeight.SemiBold
                     )
                 ) {
@@ -253,7 +253,7 @@ fun MessageInput(
         // Voice and image buttons when no text (only visible in Mesh chat)
         if (value.text.isEmpty() && showMediaButtons) {
             // Hold-to-record microphone
-            val bg = if (colorScheme.background == Color.Black) Color(0xFF00FF00).copy(alpha = 0.75f) else Color(0xFF008000).copy(alpha = 0.75f)
+            val bg = colorScheme.primary.copy(alpha = 0.85f)
 
             // Ensure latest values are used when finishing recording
             val latestSelectedPeer = rememberUpdatedState(selectedPrivatePeer)
@@ -324,15 +324,11 @@ fun MessageInput(
                         .size(30.dp)
                         .background(
                             color = if (!hasText) {
-                                // Disabled state - muted grey
-                                colorScheme.onSurface.copy(alpha = 0.3f)
+                                colorScheme.onSurface.copy(alpha = 0.15f)
                             } else if (selectedPrivatePeer != null || currentChannel != null) {
-                                // Orange for both private messages and channels when enabled
-                                Color(0xFFFF9500).copy(alpha = 0.75f)
-                            } else if (colorScheme.background == Color.Black) {
-                                Color(0xFF00FF00).copy(alpha = 0.75f) // Bright green for dark theme
+                                colorScheme.tertiary.copy(alpha = 0.9f)
                             } else {
-                                Color(0xFF008000).copy(alpha = 0.75f) // Dark green for light theme
+                                colorScheme.primary.copy(alpha = 0.9f)
                             },
                             shape = CircleShape
                         ),
@@ -343,15 +339,9 @@ fun MessageInput(
                         contentDescription = stringResource(id = R.string.send_message),
                         modifier = Modifier.size(20.dp),
                         tint = if (!hasText) {
-                            // Disabled state - muted grey icon
-                            colorScheme.onSurface.copy(alpha = 0.5f)
-                        } else if (selectedPrivatePeer != null || currentChannel != null) {
-                            // Black arrow on orange for both private and channel modes
-                            Color.Black
-                        } else if (colorScheme.background == Color.Black) {
-                            Color.Black // Black arrow on bright green in dark theme
+                            colorScheme.onSurface.copy(alpha = 0.3f)
                         } else {
-                            Color.White // White arrow on dark green in light theme
+                            colorScheme.onPrimary
                         }
                     )
                 }
@@ -411,10 +401,7 @@ fun CommandSuggestionItem(
 
         Text(
             text = allCommands.joinToString(", "),
-            style = MaterialTheme.typography.bodySmall.copy(
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Medium
-            ),
+            style = MaterialTheme.typography.labelMedium,
             color = colorScheme.primary,
             fontSize = (BASE_FONT_SIZE - 4).sp
         )
@@ -423,9 +410,7 @@ fun CommandSuggestionItem(
         suggestion.syntax?.let { syntax ->
             Text(
                 text = syntax,
-                style = MaterialTheme.typography.bodySmall.copy(
-                    fontFamily = FontFamily.Monospace
-                ),
+                style = MaterialTheme.typography.labelSmall,
                 color = colorScheme.onSurface.copy(alpha = 0.8f),
                 fontSize = (BASE_FONT_SIZE - 5).sp
             )
@@ -435,7 +420,7 @@ fun CommandSuggestionItem(
         Text(
             text = suggestion.description,
             style = MaterialTheme.typography.bodySmall.copy(
-                fontFamily = FontFamily.Monospace
+                
             ),
             color = colorScheme.onSurface.copy(alpha = 0.7f),
             fontSize = (BASE_FONT_SIZE - 5).sp,
@@ -485,11 +470,8 @@ fun MentionSuggestionItem(
     ) {
         Text(
             text = stringResource(R.string.mention_suggestion_at, suggestion),
-            style = MaterialTheme.typography.bodySmall.copy(
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.SemiBold
-            ),
-            color = Color(0xFFFF9500), // Orange like mentions
+            style = MaterialTheme.typography.labelMedium,
+            color = colorScheme.tertiary,
             fontSize = (BASE_FONT_SIZE - 4).sp
         )
         
@@ -497,9 +479,7 @@ fun MentionSuggestionItem(
         
         Text(
             text = stringResource(R.string.mention),
-            style = MaterialTheme.typography.bodySmall.copy(
-                fontFamily = FontFamily.Monospace
-            ),
+            style = MaterialTheme.typography.labelSmall,
             color = colorScheme.onSurface.copy(alpha = 0.7f),
             fontSize = (BASE_FONT_SIZE - 5).sp
         )

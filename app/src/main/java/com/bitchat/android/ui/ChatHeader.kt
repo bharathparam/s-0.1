@@ -48,8 +48,8 @@ fun TorStatusDot(
     
     if (torStatus.mode != com.bitchat.android.net.TorMode.OFF) {
         val dotColor = when {
-            torStatus.running && torStatus.bootstrapPercent < 100 -> Color(0xFFFF9500) // Orange - bootstrapping
-            torStatus.running && torStatus.bootstrapPercent >= 100 -> Color(0xFF00C851) // Green - connected
+            torStatus.running && torStatus.bootstrapPercent < 100 -> MaterialTheme.colorScheme.tertiary // Orange - bootstrapping
+            torStatus.running && torStatus.bootstrapPercent >= 100 -> MaterialTheme.colorScheme.tertiary // Green - connected
             else -> Color.Red // Red - error/disconnected
         }
         Canvas(
@@ -83,7 +83,7 @@ fun NoiseSessionIcon(
         )
         "established" -> Triple(
             Icons.Filled.Lock,
-            Color(0xFFFF9500), // Orange - secure
+            MaterialTheme.colorScheme.tertiary, // Orange - secure
             stringResource(R.string.cd_encrypted)
         )
         else -> { // "failed" or any other state
@@ -132,8 +132,7 @@ fun NicknameEditor(
             value = value,
             onValueChange = onValueChange,
             textStyle = MaterialTheme.typography.bodyMedium.copy(
-                color = colorScheme.primary,
-                fontFamily = FontFamily.Monospace
+                color = colorScheme.primary
             ),
             cursorBrush = SolidColor(colorScheme.primary),
             singleLine = true,
@@ -168,15 +167,15 @@ fun PeerCounter(
         is com.bitchat.android.geohash.ChannelID.Location -> {
             // Geohash channel: show geohash participants
             val count = geohashPeople.size
-            val green = Color(0xFF00C851) // Standard green
-            Pair(count, if (count > 0) green else Color.Gray)
+            val green = colorScheme.tertiary // Accent
+            Pair(count, if (count > 0) green else colorScheme.onSurfaceVariant)
         }
         is com.bitchat.android.geohash.ChannelID.Mesh,
         null -> {
             // Mesh channel: show Bluetooth-connected peers (excluding self)
             val count = connectedPeers.size
-            val meshBlue = Color(0xFF007AFF) // iOS-style blue for mesh
-            Pair(count, if (isConnected && count > 0) meshBlue else Color.Gray)
+            val meshBlue = colorScheme.primary
+            Pair(count, if (isConnected && count > 0) meshBlue else colorScheme.onSurfaceVariant)
         }
     }
     
@@ -207,7 +206,7 @@ fun PeerCounter(
             Text(
                 text = stringResource(R.string.channel_count_prefix) + "${joinedChannels.size}",
                 style = MaterialTheme.typography.bodyMedium,
-                color = if (isConnected) Color(0xFF00C851) else Color.Red,
+                color = if (isConnected) colorScheme.tertiary else colorScheme.error,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -302,7 +301,7 @@ private fun ChannelHeader(
         Text(
             text = stringResource(R.string.chat_channel_prefix, channel),
             style = MaterialTheme.typography.titleMedium,
-            color = Color(0xFFFF9500), // Orange to match input field
+            color = colorScheme.primary,
             modifier = Modifier
                 .align(Alignment.Center)
                 .clickable { onSidebarClick() }
@@ -387,7 +386,7 @@ private fun MainHeader(
                     modifier = Modifier
                         .size(16.dp)
                         .clickable { viewModel.openLatestUnreadPrivateChat() },
-                    tint = Color(0xFFFF9500)
+                    tint = colorScheme.tertiary
                 )
             }
 
@@ -424,7 +423,7 @@ private fun MainHeader(
                         Icon(
                             imageVector = if (isBookmarked) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
                             contentDescription = stringResource(R.string.cd_toggle_bookmark),
-                            tint = if (isBookmarked) Color(0xFF00C851) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
+                            tint = if (isBookmarked) colorScheme.tertiary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -476,13 +475,13 @@ private fun LocationChannelsButton(
     
     val (badgeText, badgeColor) = when (selectedChannel) {
         is com.bitchat.android.geohash.ChannelID.Mesh -> {
-            "#mesh" to Color(0xFF007AFF) // iOS blue for mesh
+            "#mesh" to colorScheme.primary // Blue-ish for mesh
         }
         is com.bitchat.android.geohash.ChannelID.Location -> {
             val geohash = (selectedChannel as com.bitchat.android.geohash.ChannelID.Location).channel.geohash
-            "#$geohash" to Color(0xFF00C851) // Green for location
+            "#$geohash" to colorScheme.tertiary // Accent for location
         }
-        null -> "#mesh" to Color(0xFF007AFF) // Default to mesh
+        null -> "#mesh" to colorScheme.primary
     }
     
     Button(
@@ -496,9 +495,7 @@ private fun LocationChannelsButton(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = badgeText,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontFamily = FontFamily.Monospace
-                ),
+                style = MaterialTheme.typography.bodyMedium,
                 color = badgeColor,
                 maxLines = 1
             )

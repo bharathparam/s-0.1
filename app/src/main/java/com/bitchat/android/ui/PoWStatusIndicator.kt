@@ -58,7 +58,7 @@ fun PoWStatusIndicator(
                     Icon(
                         imageVector = Icons.Filled.Security,
                         contentDescription = stringResource(R.string.cd_mining_pow),
-                        tint = Color(0xFFFF9500), // Orange for mining
+                        tint = MaterialTheme.colorScheme.tertiary, // Orange for mining
                         modifier = Modifier
                             .size(12.dp)
                             .graphicsLayer { rotationZ = rotation }
@@ -89,7 +89,7 @@ fun PoWStatusIndicator(
                     Icon(
                         imageVector = Icons.Filled.Security,
                         contentDescription = stringResource(R.string.cd_proof_of_work),
-                        tint = if (isMining) Color(0xFFFF9500) else {
+                        tint = if (isMining) MaterialTheme.colorScheme.tertiary else {
                             if (isDark) Color(0xFF32D74B) else Color(0xFF248A3D)
                         },
                         modifier = Modifier.size(14.dp)
@@ -103,8 +103,8 @@ fun PoWStatusIndicator(
                             stringResource(R.string.pow_label_format, powDifficulty)
                         },
                         fontSize = 11.sp,
-                        fontFamily = FontFamily.Monospace,
-                        color = if (isMining) Color(0xFFFF9500) else {
+                        
+                        color = if (isMining) MaterialTheme.colorScheme.tertiary else {
                             colorScheme.onSurface.copy(alpha = 0.7f)
                         }
                     )
@@ -114,7 +114,7 @@ fun PoWStatusIndicator(
                         Text(
                             text = stringResource(R.string.pow_time_estimate, NostrProofOfWork.estimateMiningTime(powDifficulty)),
                             fontSize = 9.sp,
-                            fontFamily = FontFamily.Monospace,
+                            
                             color = colorScheme.onSurface.copy(alpha = 0.5f)
                         )
                     }

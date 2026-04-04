@@ -257,15 +257,7 @@ fun ChatScreen(viewModel: ChatViewModel) {
             onLocationNotesClick = { showLocationNotesSheet = true }
         )
 
-        // Divider under header - positioned after status bar + header height
-        HorizontalDivider(
-            modifier = Modifier
-                .fillMaxWidth()
-                .windowInsetsPadding(WindowInsets.statusBars)
-                .offset(y = headerHeight)
-                .zIndex(1f),
-            color = colorScheme.outline.copy(alpha = 0.3f)
-        )
+        // No divider – uses tonal shift per the design system
 
         // Scroll-to-bottom floating button
         AnimatedVisibility(
@@ -281,16 +273,15 @@ fun ChatScreen(viewModel: ChatViewModel) {
         ) {
             Surface(
                 shape = CircleShape,
-                color = colorScheme.background,
-                tonalElevation = 3.dp,
-                shadowElevation = 6.dp,
-                border = BorderStroke(2.dp, Color(0xFF00C851))
+                color = colorScheme.surface,
+                tonalElevation = 4.dp,
+                shadowElevation = 8.dp
             ) {
                 IconButton(onClick = { forceScrollToBottom = !forceScrollToBottom }) {
                     Icon(
                         imageVector = Icons.Filled.ArrowDownward,
                         contentDescription = stringResource(com.bitchat.android.R.string.cd_scroll_to_bottom),
-                        tint = Color(0xFF00C851)
+                        tint = colorScheme.primary
                     )
                 }
             }
@@ -373,7 +364,7 @@ fun ChatInputSection(
         color = colorScheme.background
     ) {
         Column {
-            HorizontalDivider(color = colorScheme.outline.copy(alpha = 0.3f))
+            // No divider – tonal shift is enough
             // Command suggestions box
             if (showCommandSuggestions && commandSuggestions.isNotEmpty()) {
                 CommandSuggestionsBox(
@@ -381,7 +372,7 @@ fun ChatInputSection(
                     onSuggestionClick = onCommandSuggestionClick,
                     modifier = Modifier.fillMaxWidth()
                 )
-                HorizontalDivider(color = colorScheme.outline.copy(alpha = 0.2f))
+                // No divider between suggestion boxes
             }
             // Mention suggestions box
             if (showMentionSuggestions && mentionSuggestions.isNotEmpty()) {
@@ -390,7 +381,7 @@ fun ChatInputSection(
                     onSuggestionClick = onMentionSuggestionClick,
                     modifier = Modifier.fillMaxWidth()
                 )
-                HorizontalDivider(color = colorScheme.outline.copy(alpha = 0.2f))
+                // No divider between suggestion boxes
             }
             MessageInput(
                 value = messageText,

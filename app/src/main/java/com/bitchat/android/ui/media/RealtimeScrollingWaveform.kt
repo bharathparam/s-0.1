@@ -15,6 +15,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.MaterialTheme
 
 /**
  * Real-time scrolling waveform for recording: maintains a dense sliding window of bars.
@@ -25,9 +26,10 @@ fun RealtimeScrollingWaveform(
     modifier: Modifier = Modifier,
     amplitudeNorm: Float,
     bars: Int = 240,
-    barColor: Color = Color(0xFF00FF7F),
+    barColor: Color = Color.Unspecified,
     baseColor: Color = Color(0xFF444444)
 ) {
+    val resolvedBarColor = if (barColor == Color.Unspecified) MaterialTheme.colorScheme.tertiary else barColor
     val latestAmp by rememberUpdatedState(amplitudeNorm)
     val samples: SnapshotStateList<Float> = remember {
         mutableStateListOf<Float>().also { list -> repeat(bars) { list.add(0f) } }
@@ -67,7 +69,7 @@ fun RealtimeScrollingWaveform(
             val yTop = midY - lineH / 2f
             val yBot = midY + lineH / 2f
             drawLine(
-                color = barColor,
+                color = resolvedBarColor,
                 start = Offset(x, yTop),
                 end = Offset(x, yBot),
                 strokeWidth = stroke,

@@ -70,7 +70,7 @@ fun GeohashPeopleList(
             Text(
                 text = stringResource(R.string.geohash_people_header),
                 style = MaterialTheme.typography.labelSmall.copy(
-                    fontFamily = FontFamily.Monospace,
+                    
                     fontWeight = FontWeight.Bold
                 ),
                 color = colorScheme.onSurface.copy(alpha = 0.6f)
@@ -82,7 +82,7 @@ fun GeohashPeopleList(
             Text(
                 text = stringResource(R.string.nobody_around),
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    fontFamily = FontFamily.Monospace,
+                    
                     fontSize = BASE_FONT_SIZE.sp
                 ),
                 color = colorScheme.onSurface.copy(alpha = 0.5f),
@@ -186,14 +186,14 @@ private fun GeohashPersonItem(
                 imageVector = Icons.Filled.Email,
                 contentDescription = stringResource(R.string.cd_unread_message),
                 modifier = Modifier.size(12.dp),
-                tint = Color(0xFFFF9500) // iOS orange
+                tint = MaterialTheme.colorScheme.tertiary // iOS orange
             )
         } else {
             // Face icon with teleportation state
             val (iconName, iconColor) = when {
-                isMe && isMyTeleported -> "face.dashed" to Color(0xFFFF9500) // Orange for teleported me
+                isMe && isMyTeleported -> "face.dashed" to MaterialTheme.colorScheme.tertiary // Orange for teleported me
                 isTeleported -> "face.dashed" to colorScheme.onSurface // Regular color for teleported others
-                isMe -> "face.smiling" to Color(0xFFFF9500) // Orange for me
+                isMe -> "face.smiling" to MaterialTheme.colorScheme.tertiary // Orange for me
                 else -> "face.smiling" to colorScheme.onSurface // Regular color for others
             }
             
@@ -221,7 +221,7 @@ private fun GeohashPersonItem(
         // Get consistent peer color (matches iOS color assignment exactly)
         val isDark = colorScheme.background.red + colorScheme.background.green + colorScheme.background.blue < 1.5f
         val assignedColor = viewModel.colorForNostrPubkey(person.id, isDark)
-        val baseColor = if (isMe) Color(0xFFFF9500) else assignedColor
+        val baseColor = if (isMe) MaterialTheme.colorScheme.tertiary else assignedColor
         
         Row(
             modifier = Modifier.weight(1f),
@@ -231,7 +231,7 @@ private fun GeohashPersonItem(
             Text(
                 text = baseName,
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    fontFamily = FontFamily.Monospace,
+                    
                     fontSize = BASE_FONT_SIZE.sp,
                     fontWeight = if (isMe) FontWeight.Bold else FontWeight.Normal
                 ),
@@ -245,7 +245,7 @@ private fun GeohashPersonItem(
                 Text(
                     text = suffix,
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        fontFamily = FontFamily.Monospace,
+                        
                         fontSize = BASE_FONT_SIZE.sp
                     ),
                     color = baseColor.copy(alpha = 0.6f)
@@ -257,7 +257,7 @@ private fun GeohashPersonItem(
                 Text(
                     text = stringResource(R.string.you_suffix),
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        fontFamily = FontFamily.Monospace,
+                        
                         fontSize = BASE_FONT_SIZE.sp
                     ),
                     color = baseColor

@@ -173,13 +173,13 @@ private fun LedgerEntryRowUi(
                 ),
                 style = MaterialTheme.typography.bodySmall,
                 color = colorScheme.onSurface.copy(alpha = 0.65f),
-                fontFamily = FontFamily.Monospace
+                
             )
             Text(
                 text = row.contentHashHex.take(14) + "…",
                 style = MaterialTheme.typography.labelSmall,
                 color = colorScheme.onSurface.copy(alpha = 0.5f),
-                fontFamily = FontFamily.Monospace,
+                
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
