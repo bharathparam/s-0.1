@@ -174,6 +174,9 @@ class PacketProcessor(private val myPeerID: String) {
             
             // CENTRALIZED RELAY LOGIC: Handle relay decisions for all packets not addressed to us
             packetRelayManager.handlePacketRelay(routed)
+            
+            // DTN INGESTION: Pass valid packets to the DTN engine to carry for other peers
+            delegate?.ingestForDTN(packet, peerID)
         }
     }
     
@@ -333,4 +336,5 @@ interface PacketProcessorDelegate {
     fun sendCachedMessages(peerID: String)
     fun relayPacket(routed: RoutedPacket)
     fun sendToPeer(peerID: String, routed: RoutedPacket): Boolean
+    fun ingestForDTN(packet: BitchatPacket, peerID: String)
 }

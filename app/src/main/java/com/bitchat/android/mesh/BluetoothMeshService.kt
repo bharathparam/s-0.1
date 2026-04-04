@@ -53,6 +53,7 @@ class BluetoothMeshService(private val context: Context) {
     private val fragmentManager = FragmentManager()
     private val securityManager = SecurityManager(encryptionService, myPeerID)
     private val storeForwardManager = StoreForwardManager()
+    private val dtnEngine = com.bitchat.android.mesh.dtn.DTNEngine.getInstance(context, myPeerID)
     private val messageHandler = MessageHandler(myPeerID, context.applicationContext)
     internal val connectionManager = BluetoothConnectionManager(context, myPeerID, fragmentManager) // Made internal for access
     private val packetProcessor = PacketProcessor(myPeerID)
@@ -247,6 +248,14 @@ class BluetoothMeshService(private val context: Context) {
             }
         }
         
+        // DTNEngine send callbacks – connects epidemic forwarding to BLE layer
+        dtnEngine.sendPacket = { packet ->
+            connectionManager.broadcastPacket(RoutedPacket(packet))
+        }
+        dtnEngine.sendPacketToPeer = { peerId, packet ->
+            connectionManager.sendPacketToPeer(peerId, packet)
+        }
+        
         // MessageHandler delegates
         messageHandler.delegate = object : MessageHandlerDelegate {
             // Peer management
@@ -426,6 +435,7 @@ class BluetoothMeshService(private val context: Context) {
             }
             
             override fun onDeliveryAckReceived(messageID: String, peerID: String) {
+                try { dtnEngine.onDeliveryConfirmed(messageID, peerID) } catch (_: Exception) {}
                 delegate?.didReceiveDeliveryAck(messageID, peerID)
             }
             
@@ -501,6 +511,11 @@ class BluetoothMeshService(private val context: Context) {
                     }
                     // Track for sync
                     try { gossipSyncManager.onPublicPacketSeen(routed.packet) } catch (_: Exception) { }
+
+                    // DTN: Notify engine of new peer so stored bundles are forwarded
+                    if (pid != null) {
+                        try { dtnEngine.onPeerConnected(pid) } catch (_: Exception) { }
+                    }
                 }
             }
             
@@ -557,6 +572,10 @@ class BluetoothMeshService(private val context: Context) {
             override fun handleLedgerRecord(routed: RoutedPacket) {
                 serviceScope.launch { messageHandler.handleLedgerRecord(routed) }
             }
+            
+            override fun ingestForDTN(packet: BitchatPacket, peerID: String) {
+                try { dtnEngine.ingestPacket(packet, peerID) } catch (_: Exception) { }
+            }
         }
         
         // BluetoothConnectionManager delegates
@@ -610,6 +629,8 @@ class BluetoothMeshService(private val context: Context) {
                         com.bitchat.android.ui.debug.DebugSettingsManager.getInstance()
                             .logPeerDisconnection(peer, nick, addr)
                     } catch (_: Exception) { }
+                    // DTN: Allow re-exchange when peer reconnects
+                    try { dtnEngine.onPeerDisconnected(peer) } catch (_: Exception) { }
                 }
             }
             
@@ -681,6 +702,7 @@ class BluetoothMeshService(private val context: Context) {
             fragmentManager.shutdown()
             securityManager.shutdown()
             storeForwardManager.shutdown()
+            dtnEngine.shutdown()
             messageHandler.shutdown()
             packetProcessor.shutdown()
             
@@ -726,6 +748,8 @@ class BluetoothMeshService(private val context: Context) {
             connectionManager.broadcastPacket(RoutedPacket(signedPacket))
             // Track our own broadcast message for sync
             try { gossipSyncManager.onPublicPacketSeen(signedPacket) } catch (_: Exception) { }
+            // DTN: Store outgoing broadcast for delay-tolerant forwarding
+            try { dtnEngine.storeOutgoing(signedPacket) } catch (_: Exception) { }
         }
     }
 
@@ -971,6 +995,8 @@ class BluetoothMeshService(private val context: Context) {
                     // Sign the packet before broadcasting
                     val signedPacket = signPacketBeforeBroadcast(packet)
                     connectionManager.broadcastPacket(RoutedPacket(signedPacket))
+                    // DTN: Store outgoing private message for delay-tolerant forwarding
+                    try { dtnEngine.storeOutgoing(signedPacket) } catch (_: Exception) { }
                     Log.d(TAG, "📤 Sent encrypted private message to $recipientPeerID (${encrypted.size} bytes)")
                     
                     // FIXED: Don't send didReceiveMessage for our own sent messages
@@ -1388,6 +1414,8 @@ class BluetoothMeshService(private val context: Context) {
             appendLine()
             appendLine(storeForwardManager.getDebugInfo())
             appendLine()
+            appendLine(dtnEngine.getDebugInfo())
+            appendLine()
             appendLine(messageHandler.getDebugInfo())
             appendLine()
             appendLine(packetProcessor.getDebugInfo())
@@ -1473,6 +1501,7 @@ class BluetoothMeshService(private val context: Context) {
             // Clear all managers
             fragmentManager.clearAllFragments()
             storeForwardManager.clearAllCache()
+            try { com.bitchat.android.mesh.dtn.DTNBundleStore.getInstance(context).clear() } catch (_: Exception) { }
             securityManager.clearAllData()
             peerManager.clearAllPeers()
             peerManager.clearAllFingerprints()

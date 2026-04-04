@@ -55,6 +55,9 @@ class MessageHandler(private val myPeerID: String, private val appContext: andro
             return
         }
         
+        // DTN: We received a packet intended for us. Stop epidemic forwarding for its bundle.
+        try { com.bitchat.android.mesh.dtn.DTNEngine.tryGetInstance()?.checkIncomingForDelivery(packet, peerID) } catch (_: Exception) {}
+        
         try {
             // Decrypt the message using the Noise service
             val decryptedData = delegate?.decryptFromPeer(packet.payload, peerID)
